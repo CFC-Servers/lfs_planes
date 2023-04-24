@@ -69,20 +69,6 @@ for _, v in pairs( DEFAULT_KEYS ) do
 	simfphys.LFS:AddKey( v.name, v.class,  v.name_menu, v.default, v.cmd, v.IN_KEY )
 end
 
-function simfphys.LFS.CheckUpdates()
-	print("[LFS] is no longer being supported!")
-
-	if LVS then return end
-
-	print("[LFS] get the successor at: https://steamcommunity.com/sharedfiles/filedetails/?id=2912826012")
-
-	if CLIENT then 
-		timer.Simple(18, function() 
-			chat.AddText( Color( 255, 0, 0 ), "[LFS] get the successor at: https://steamcommunity.com/sharedfiles/filedetails/?id=2912826012" )
-		end)
-	end
-end
-
 function simfphys.LFS.GetVersion()
 	return simfphys.LFS.VERSION
 end
@@ -1785,10 +1771,6 @@ end)
 cvars.AddChangeCallback( "lfs_ai_ignorenpcs", function( convar, oldValue, newValue ) 
 	simfphys.LFS.IgnoreNPCs = tonumber( newValue ) ~=0
 end)
-
-hook.Add( "InitPostEntity", "!!!lfscheckupdates", function()
-	timer.Simple(20, function() simfphys.LFS.CheckUpdates() end)
-end )
 
 hook.Add( "CanProperty", "!!!!lfsEditPropertiesDisabler", function( ply, property, ent )
 	if ent.LFS and not ply:IsAdmin() and property == "editentity" then return false end
