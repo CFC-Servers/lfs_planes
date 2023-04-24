@@ -935,25 +935,17 @@ if CLIENT then
 		outline = false,
 	} )
 
-	function simfphys.LFS.HudPaintPlaneIdentifier( X, Y, In_Col, target_ent )
-		if not IsValid( target_ent ) then return end
+	function simfphys.LFS.HudPaintPlaneIdentifier( targetEnt, x, y, r, g, b, a )
+		if not IsValid( targetEnt ) then return end
 
-		surface.SetDrawColor( In_Col.r, In_Col.g, In_Col.b, In_Col.a )
-		simfphys.LFS.DrawDiamond( X + 1, Y + 1, 20, target_ent:GetHP() / target_ent:GetMaxHP() )
+		surface.SetDrawColor( r, g, b, a )
+		simfphys.LFS.DrawDiamond( x + 1, y + 1, 20, targetEnt:GetHP() / targetEnt:GetMaxHP() )
 
-		if target_ent:GetMaxShield() > 0 then
-			surface.SetDrawColor( 200, 200, 255, 255 )
-			simfphys.LFS.DrawDiamond( X + 1, Y + 1, 24, target_ent:GetShield() / target_ent:GetMaxShield() )
-		end
+		local maxShield = targetEnt:GetMaxShield()
+		if maxShield == 0 then return end
 
-		--[[ old style
-		local Size = 60
-		
-		surface.DrawLine( X - Size, Y + Size, X + Size, Y + Size )
-		surface.DrawLine( X - Size, Y - Size, X - Size, Y + Size )
-		surface.DrawLine( X + Size, Y - Size, X + Size, Y + Size )
-		surface.DrawLine( X - Size, Y - Size, X + Size, Y - Size )
-		]]
+		surface.SetDrawColor( 200, 200, 255, 255 )
+		simfphys.LFS.DrawDiamond( x + 1, y + 1, 24, targetEnt:GetShield() / targetEnt:GetMaxShield() )
 	end
 
 	local function PaintPlaneHud( ent, X, Y, ply )

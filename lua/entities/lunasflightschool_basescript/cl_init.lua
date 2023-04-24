@@ -20,8 +20,9 @@ function ENT:LFSCalcViewThirdPerson( view, ply )
 	return view
 end
 
-function ENT:LFSHudPaintPlaneIdentifier( X, Y, In_Col, target_ent )
-	simfphys.LFS.HudPaintPlaneIdentifier( X, Y, In_Col, target_ent )
+function ENT:LFSHudPaintPlaneIdentifier( x, y, color, target_ent )
+	-- TODO: Make this take raw color numbers instead of a color object
+	simfphys.LFS.HudPaintPlaneIdentifier( target_ent, x, y, color.r, color.g, color.b, color.a )
 end
 
 function ENT:LFSHudPaintInfoText( X, Y, speed, alt, AmmoPrimary, AmmoSecondary, Throttle )
