@@ -53,10 +53,8 @@ end
 function ENT:HandleWeapons(Fire1, Fire2)
 	local Driver = self:GetDriver()
 
-	if IsValid( Driver ) then
-		if self:GetAmmoPrimary() > 0 then
-			Fire1 = Driver:KeyDown( IN_ATTACK )
-		end
+	if IsValid( Driver ) and self:GetAmmoPrimary() > 0 then
+		Fire1 = Driver:KeyDown( IN_ATTACK )
 	end
 
 	if Fire1 then
