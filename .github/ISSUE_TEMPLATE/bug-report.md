@@ -15,7 +15,7 @@ assignees: brandonsturgeon, wrefgtzweve
 
 
 ### To Reproduce
-Please, to the best of your ability, include steps for how the developers can reproduce the bug.
+<!-- Please, to the best of your ability, include steps for how the developers can reproduce the bug. -->
 
 
 ### System Setup
@@ -25,8 +25,8 @@ Please, to the best of your ability, include steps for how the developers can re
 
 
 ### Screenshots
-If applicable, add screenshots to help explain your problem.
-<!-- You can delete this section if screenshots are irrelevant or unavailable -->
+<!-- If applicable, add screenshots to help explain your problem. -->
+<!-- (You can delete this section if screenshots are irrelevant or unavailable) -->
 
 **Additional info**
 <!-- Add any other context or information about the problem here. -->
