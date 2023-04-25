@@ -52,7 +52,7 @@ function ENT:PrimaryAttack()
 	
 	local bullet = {}
 	bullet.Num 	= 1
-	bullet.Src 	= self:LocalToWorld( Vector(20,0,10) )
+	bullet.Src 	= self:LocalToWorld( Vector( 20, 0, 10 ) )
 	bullet.Dir 	= self:GetForward()
 	bullet.Spread 	= Vector( 0.015,  0.015, 0 )
 	bullet.Tracer	= 1
@@ -85,14 +85,15 @@ function ENT:RemoveAI() -- called when the ai gets disabled
 end
 
 function ENT:OnKeyThrottle( bPressed )
-	if self:CanSound() then -- makes sure the player cant spam sounds
-		if bPressed then -- if throttle key is pressed
-			--self:EmitSound( "buttons/button3.wav" )
-			--self:DelayNextSound( 1 ) -- when the next sound should be allowed to be played
-		else
-			--self:EmitSound( "buttons/button11.wav" )
-			--self:DelayNextSound( 0.5 )
-		end
+	if not self:CanSound() then return end -- makes sure the player cant spam sounds
+	if bPressed then -- if throttle key is pressed
+		-- self:EmitSound( "buttons/button3.wav" )
+		-- self:DelayNextSound( 1 ) -- when the next sound should be allowed to be played
+		return
+	else
+		-- self:EmitSound( "buttons/button11.wav" )
+		-- self:DelayNextSound( 0.5 )
+		return
 	end
 end
 
@@ -135,9 +136,11 @@ function ENT:OnLandingGearToggled( bOn )
 	self:EmitSound( "vehicles/tank_readyfire1.wav" )
 	
 	if bOn then
-		--[[ set bodygroup of landing gear down? ]]--
+		-- set bodygroup of landing gear down?
+		return
 	else
-		--[[ set bodygroup of landing gear up? ]]--
+		-- set bodygroup of landing gear up?
+		return
 	end
 end
 

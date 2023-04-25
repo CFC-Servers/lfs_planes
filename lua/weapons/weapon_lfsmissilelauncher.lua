@@ -32,18 +32,144 @@ SWEP.Secondary.DefaultClip	= -1
 SWEP.Secondary.Automatic		= false
 SWEP.Secondary.Ammo		= "none"
 
+local ANG_UP = Angle( 90, 0, 0 )
+local ANG_ZERO = Angle( 0, 0, 0 )
+
+local IsValid = IsValid
+local WorldToLocal = WorldToLocal
+
+local surface_DrawLine = surface.DrawLine
+
 function SWEP:SetupDataTables()
 	self:NetworkVar( "Entity",0, "ClosestEnt" )
 	self:NetworkVar( "Float",0, "ClosestDist" )
 	self:NetworkVar( "Bool",0, "IsLocked" )
 end
 
+local weaponSelectColor = Color( 255, 210, 0, 255 )
 function SWEP:DrawWeaponSelection( x, y, wide, tall, alpha )
-	draw.SimpleText( "i", "WeaponIcons", x + wide/2, y + tall*0.2, Color( 255, 210, 0, 255 ), TEXT_ALIGN_CENTER )
+	draw.SimpleText( "i", "WeaponIcons", x + wide / 2, y + tall * 0.2, weaponSelectColor, TEXT_ALIGN_CENTER )
 end
 
 function SWEP:Initialize()
-	self.Weapon:SetHoldType( self.HoldType )
+	self:SetHoldType( self.HoldType )
+end
+
+function SWEP:LockThink()
+	if self.Locked == self:GetIsLocked() then return end
+	self:SetIsLocked( self.Locked )
+	
+	if self.Locked then
+		self.LockSND = CreateSound( self:GetOwner(), "lfs/radar_lock.wav" )
+		self.LockSND:PlayEx( 0.5, 100 )
+		
+		if self.TrackSND then
+			self.TrackSND:Stop()
+			self.TrackSND = nil
+		end
+	else
+		if self.LockSND then
+			self.LockSND:Stop()
+			self.LockSND = nil
+		end
+	end
+end
+
+function SWEP:StartTrackSound()
+	self.TrackSND = CreateSound( self:GetOwner(), "lfs/radar_track.wav" )
+	self.TrackSND:PlayEx( 0, 100 )
+	self.TrackSND:ChangeVolume( 0.5, 2 )
+end
+
+function SWEP:StopTrackSound()
+	self.TrackSND:Stop()
+	self.TrackSND = nil
+end
+
+function SWEP:GuidedThink()
+	self.FoundVehicles = self.FoundVehicles or {}
+	
+	local Owner = self:GetOwner()
+	local AimForward = Owner:GetAimVector()
+	local startpos = Owner:GetShootPos()
+
+	local Vehicles = {}
+	local ClosestEnt = NULL
+	local ClosestDist = 0
+	
+	for k, v in ipairs( self.FoundVehicles ) do
+		if IsValid( v ) then
+			local sub = v:GetPos() - startpos
+
+			local dist = sub:Length()
+			local toEnt = sub:GetNormalized()
+			local Ang = math.acos( math.Clamp( AimForward:Dot( toEnt ), -1, 1) ) * ( 180 / math.pi )
+			
+			if Ang < 30 and dist < 7500 and self:CanSee( v ) then
+				table.insert( Vehicles, v )
+				
+				local stuff = WorldToLocal( v:GetPos(), ANG_ZERO, startpos, Owner:EyeAngles() + ANG_UP )
+				stuff.z = 0
+				local stuffDist = stuff:Length()
+			
+				if not IsValid( ClosestEnt ) then
+					ClosestEnt = v
+					ClosestDist = stuffDist
+				end
+				
+				if stuffDist < ClosestDist then
+					ClosestDist = stuffDist
+					if ClosestEnt ~= v then
+						ClosestEnt = v
+					end
+				end
+			end
+		else
+			self.FoundVehicles[k] = nil
+		end
+	end
+	
+	if self:GetClosestEnt() ~= ClosestEnt then
+		self:SetClosestEnt( ClosestEnt )
+		self:SetClosestDist( ClosestDist )
+		
+		self.FindTime = CurTime()
+		
+		if IsValid( ClosestEnt ) then
+			self:StartTrackSound( ClosestEnt )
+		else
+			if self.TrackSND then
+				self:StopTrackSound()
+			end
+		end
+	end
+	
+	if not IsValid( ClosestEnt ) and self.TrackSND then
+		self.TrackSND:Stop()
+		self.TrackSND = nil
+	end
+end
+
+function SWEP:FindVehicles()
+	self.FoundVehicles = {}
+	local foundVehicles = self.FoundVehicles
+	
+	local class
+	for _, ent in ipairs( ents.GetAll() ) do
+		if ent.LFS then
+			table.insert( foundVehicles, ent )
+		else
+			class = ent:GetClass()
+
+			if string.StartsWith( class, "wac_hc" ) then
+				table.insert( foundVehicles, ent )
+			end
+
+			if string.StartsWith( class, "wac_pl" ) then
+				table.insert( foundVehicles, ent )
+			end
+		end
+	end
 end
 
 function SWEP:Think()
@@ -60,161 +186,69 @@ function SWEP:Think()
 	else
 		self.Locked = false
 	end
-	
-	if self.Locked ~= self:GetIsLocked() then
-		self:SetIsLocked( self.Locked )
-		
-		if self.Locked then
-			self.LockSND = CreateSound(self.Owner, "lfs/radar_lock.wav")
-			self.LockSND:PlayEx( 0.5, 100 )
-			
-			if self.TrackSND then
-				self.TrackSND:Stop()
-				self.TrackSND = nil
-			end
-		else
-			if self.LockSND then
-				self.LockSND:Stop()
-				self.LockSND = nil
-			end
-		end
-	end
+
+	self:LockThink()
 	
 	if self.nextFind < curtime then
 		self.nextFind = curtime + 3
-		self.FoundVehicles = {}
-		
-		for k, v in pairs( simfphys.LFS:PlanesGetAll() ) do
-			if v.LFS then
-				table.insert( self.FoundVehicles, v )
-			end
-		end
-		
-		for k, v in pairs( ents.FindByClass( "wac_hc*" ) ) do
-			table.insert( self.FoundVehicles, v )
-		end
-		
-		for k, v in pairs( ents.FindByClass( "wac_pl*" ) ) do
-			table.insert( self.FoundVehicles, v )
-		end
+		self:FindVehicles()
 	end
 	
 	if self.guided_nextThink < curtime then
 		self.guided_nextThink = curtime + 0.25
-		self.FoundVehicles = self.FoundVehicles or {}
-		
-		local AimForward = self.Owner:GetAimVector()
-		local startpos = self.Owner:GetShootPos()
-
-		local Vehicles = {}
-		local ClosestEnt = NULL
-		local ClosestDist = 0
-		
-		for k, v in pairs( self.FoundVehicles  ) do
-			if IsValid( v ) then
-				local sub = (v:GetPos() - startpos)
-				local toEnt = sub:GetNormalized()
-				local dist = sub:Length()
-				local Ang = math.acos( math.Clamp( AimForward:Dot( toEnt ) ,-1,1) ) * (180 / math.pi)
-				
-				if Ang < 30 and dist < 7500 and self:CanSee( v ) then
-					table.insert( Vehicles, v )
-					
-					local stuff = WorldToLocal( v:GetPos(), Angle(0,0,0), startpos, self.Owner:EyeAngles() + Angle(90,0,0) )
-					stuff.z = 0
-					local dist = stuff:Length()
-				
-					if not IsValid( ClosestEnt ) then
-						ClosestEnt = v
-						ClosestDist = dist
-					end
-					
-					if dist < ClosestDist then
-						ClosestDist = dist
-						if ClosestEnt ~= v then
-							ClosestEnt = v
-						end
-					end
-				end
-			else
-				self.FoundVehicles[k] = nil
-			end
-		end
-		
-		if self:GetClosestEnt() ~= ClosestEnt then
-			self:SetClosestEnt( ClosestEnt )
-			self:SetClosestDist( ClosestDist )
-			
-			self.FindTime = curtime
-			
-			if IsValid( ClosestEnt ) then
-				self.TrackSND = CreateSound(self.Owner, "lfs/radar_track.wav")
-				self.TrackSND:PlayEx( 0, 100 )
-				self.TrackSND:ChangeVolume( 0.5, 2 )
-			else
-				if self.TrackSND then
-					self.TrackSND:Stop()
-					self.TrackSND = nil
-				end
-			end
-		end
-		
-		if not IsValid( ClosestEnt ) then
-			if self.TrackSND then
-				self.TrackSND:Stop()
-				self.TrackSND = nil
-			end
-		end
+		self:GuidedThink()
 	end
 end
 
+-- TODO: Can this be refactored to use self:GetOwner():Visible( entity ) or a basic distance check?
+local canSeeFilter = {}
+local canSeeTrace = {}
 function SWEP:CanSee( entity )
 	local pos = entity:GetPos()
+	local owner = self:GetOwner()
+
+	canSeeFilter[1] = self:GetOwner()
+	canSeeTrace.start = owner:GetShootPos()
+	canSeeTrace.endpos = pos
+	canSeeTrace.filter = canSeeFilter
 	
-	local tr = util.TraceLine( {
-		start = self.Owner:GetShootPos(),
-		endpos = pos,
-		filter = function( ent ) 
-			if ent == self.Owner then 
-				return false
-			end
-			
-			return true
-		end
-		
-	} )
+	local tr = util.TraceLine( canSeeFilter )
+
 	return (tr.HitPos - pos):Length() < 500
 end
 
+local punchAngle = Angle( -10, -5, 0 )
 function SWEP:PrimaryAttack()
 	if not self:CanPrimaryAttack() then return end
-	self.Weapon:SetNextPrimaryFire( CurTime() + 0.5 )	
+	self:SetNextPrimaryFire( CurTime() + 0.5 )	
 	
 	self:TakePrimaryAmmo( 1 )
 	
-	self.Owner:ViewPunch( Angle( -10, -5, 0 ) )
+	local Owner = self:GetOwner()
+	Owner:ViewPunch( punchAngle )
 	
 	if CLIENT then return end
+
+	if not self:GetIsLocked() then return end
 	
-	self.Owner:EmitSound("Weapon_RPG.NPC_Single")
+	Owner:EmitSound("Weapon_RPG.NPC_Single")
 	
-	local startpos = self.Owner:GetShootPos() + self.Owner:EyeAngles():Right() * 10
+	local startpos = Owner:GetShootPos() + Owner:EyeAngles():Right() * 10
 	local ent = ents.Create( "lunasflightschool_missile" )
 	ent:SetPos( startpos )
-	ent:SetAngles( (self.Owner:GetEyeTrace().HitPos - startpos):Angle() )
-	ent:SetOwner( self.Owner )
-	ent.Attacker = self.Owner
+	ent:SetAngles( ( Owner:GetEyeTrace().HitPos - startpos ):Angle() )
+	ent:SetOwner( Owner )
+	ent.Attacker = Owner
 	ent:Spawn()
 	ent:Activate()
 	
-	ent:SetAttacker( self.Owner )
-	ent:SetInflictor( self.Owner:GetActiveWeapon() )
+	ent:SetAttacker( Owner )
+	ent:SetInflictor( Owner:GetActiveWeapon() )
 	
 	local LockOnTarget = self:GetClosestEnt()
-	
-	if IsValid( LockOnTarget ) and self:GetIsLocked() then
-		ent:SetLockOn( LockOnTarget )
-	end
+	if not IsValid( LockOnTarget ) then return end
+
+	ent:SetLockOn( LockOnTarget )
 end
 
 function SWEP:SecondaryAttack()
@@ -222,23 +256,14 @@ function SWEP:SecondaryAttack()
 end
 
 function SWEP:Deploy()
-	self.Weapon:SendWeaponAnim( ACT_VM_DRAW )
+	self:SendWeaponAnim( ACT_VM_DRAW )
 	return true
 end
 
 function SWEP:Reload()
-	if self:Clip1() < self.Primary.ClipSize and self.Owner:GetAmmoCount( self.Primary.Ammo ) > 0 then
-	
-		self.Weapon:DefaultReload( ACT_VM_RELOAD )
+	if self:Clip1() < self.Primary.ClipSize and self:GetOwner():GetAmmoCount( self.Primary.Ammo ) > 0 then
+		self:DefaultReload( ACT_VM_RELOAD )
 		self:UnLock()
-	end
-end
-
-local function DrawCircle( X, Y, radius )
-	local segmentdist = 360 / ( 2 * math.pi * radius / 2 )
-	
-	for a = 0, 360 - segmentdist, segmentdist do
-		surface.DrawLine( X + math.cos( math.rad( a ) ) * radius, Y - math.sin( math.rad( a ) ) * radius, X + math.cos( math.rad( a + segmentdist ) ) * radius, Y - math.sin( math.rad( a + segmentdist ) ) * radius )
 	end
 end
 
@@ -275,6 +300,42 @@ function SWEP:OwnerChanged()
 	self:StopSounds()
 end
 
+local traceTable = { mask = MASK_NPCWORLDSTATIC }
+local RED = { 255, 0, 0 }
+local GREEN = { 0, 255, 0 } 
+local AZURE = { 0, 127, 255 }
+
+local function paintIdentifierForPlane( plane, myPos, myTeam, startPos )
+	if not IsValid( plane ) then return end
+
+	local rPos = plane:LocalToWorld( plane:OBBCenter() )
+	local screenPos = rPos:ToScreen()
+	local Dist = ( myPos - rPos ):Length()
+	if Dist >= 13000 then return end
+
+	traceTable.start = startPos
+	traceTable.endpos = rPos
+	if util.TraceLine( traceTable ).Hit then return end
+
+	local color = RED
+	local Team = plane:GetAITEAM()
+	local alpha = math.max( 255 - Dist * 0.015, 0 )
+
+	if Team == 0 then
+		color = GREEN
+	else
+		if Team == 1 or Team == 2 then
+			if Team ~= MyTeam and MyTeam ~= 0 then
+				color = RED
+			else
+				color = AZURE
+			end
+		end
+	end
+
+	simfphys.LFS.HudPaintPlaneIdentifier( plane, screenPos.x, screenP.y, color[1], color[2], color[3], alpha )
+end
+
 local NextFind = 0
 local AllPlanes = {}
 local function PaintPlaneIdentifier( ply )
@@ -283,55 +344,24 @@ local function PaintPlaneIdentifier( ply )
 		AllPlanes = simfphys.LFS:PlanesGetAll()
 	end
 
-	local MyPos = ply:GetPos()
-	local MyTeam = ply:lfsGetAITeam()
+	local myPos = ply:GetPos()
+	local myTeam = ply:lfsGetAITeam()
 	local startpos = ply:GetShootPos()
 
 	for _, v in pairs( AllPlanes ) do
-		if IsValid( v ) then
-			local rPos = v:LocalToWorld( v:OBBCenter() )
-
-			local Pos = rPos:ToScreen()
-			local Dist = (MyPos - rPos):Length()
-
-			if Dist < 13000 then
-				if not util.TraceLine( {start = startpos,endpos = rPos,mask = MASK_NPCWORLDSTATIC,} ).Hit then
-
-					local Alpha = math.max(255 - Dist * 0.015,0)
-					local Team = v:GetAITEAM()
-					local IndicatorColor = Color( 255, 0, 0, Alpha )
-
-					if Team == 0 then
-						IndicatorColor = Color( 0, 255, 0, Alpha )
-					else
-						if Team == 1 or Team == 2 then
-							if Team ~= MyTeam and MyTeam ~= 0 then
-								IndicatorColor = Color( 255, 0, 0, Alpha )
-							else
-								IndicatorColor = Color( 0, 127, 255, Alpha )
-							end
-						end
-					end
-
-					simfphys.LFS.HudPaintPlaneIdentifier( Pos.x, Pos.y, IndicatorColor, v )
-				end
-			end
-		end
+		paintIdentifierForPlane( v, myPos, myTeam, startpos )
 	end
 end
 
 function SWEP:DrawHUD()
 	local ply = LocalPlayer()
-	
 	if ply:InVehicle() then return end
 
 	PaintPlaneIdentifier( ply )
 
 	local ent = self:GetClosestEnt()
-	
 	if not IsValid( ent ) then return end
 	
-	local dist = (ent:GetPos() - ply:GetPos()):Length() / 500
 	local pos = ent:LocalToWorld( ent:OBBCenter() )
 	
 	local scr = pos:ToScreen()
@@ -348,35 +378,35 @@ function SWEP:DrawHUD()
 		surface.SetDrawColor( 200, 200, 200, 255 )
 	end
 	
-	surface.DrawLine( scrW, scrH, X, Y )
+	surface_DrawLine( scrW, scrH, X, Y )
 
 	local Size = self:GetIsLocked() and 30 or 60
 
-	surface.DrawLine( X - Size, Y + Size, X - Size * 0.5, Y + Size )
-	surface.DrawLine( X + Size, Y + Size, X + Size * 0.5, Y + Size )
+	surface_DrawLine( X - Size, Y + Size, X - Size * 0.5, Y + Size )
+	surface_DrawLine( X + Size, Y + Size, X + Size * 0.5, Y + Size )
 
-	surface.DrawLine( X - Size, Y + Size, X - Size, Y + Size * 0.5 )
-	surface.DrawLine( X - Size, Y - Size, X - Size, Y - Size * 0.5 )
+	surface_DrawLine( X - Size, Y + Size, X - Size, Y + Size * 0.5 )
+	surface_DrawLine( X - Size, Y - Size, X - Size, Y - Size * 0.5 )
 
-	surface.DrawLine( X + Size, Y + Size, X + Size, Y + Size * 0.5 )
-	surface.DrawLine( X + Size, Y - Size, X + Size, Y - Size * 0.5 )
+	surface_DrawLine( X + Size, Y + Size, X + Size, Y + Size * 0.5 )
+	surface_DrawLine( X + Size, Y - Size, X + Size, Y - Size * 0.5 )
 
-	surface.DrawLine( X - Size, Y - Size, X - Size * 0.5, Y - Size )
-	surface.DrawLine( X + Size, Y - Size, X + Size * 0.5, Y - Size )
+	surface_DrawLine( X - Size, Y - Size, X - Size * 0.5, Y - Size )
+	surface_DrawLine( X + Size, Y - Size, X + Size * 0.5, Y - Size )
 
 
 	X = X + 1
 	Y = Y + 1
 	surface.SetDrawColor( 0, 0, 0, 100 )
-	surface.DrawLine( X - Size, Y + Size, X - Size * 0.5, Y + Size )
-	surface.DrawLine( X + Size, Y + Size, X + Size * 0.5, Y + Size )
+	surface_DrawLine( X - Size, Y + Size, X - Size * 0.5, Y + Size )
+	surface_DrawLine( X + Size, Y + Size, X + Size * 0.5, Y + Size )
 
-	surface.DrawLine( X - Size, Y + Size, X - Size, Y + Size * 0.5 )
-	surface.DrawLine( X - Size, Y - Size, X - Size, Y - Size * 0.5 )
+	surface_DrawLine( X - Size, Y + Size, X - Size, Y + Size * 0.5 )
+	surface_DrawLine( X - Size, Y - Size, X - Size, Y - Size * 0.5 )
 
-	surface.DrawLine( X + Size, Y + Size, X + Size, Y + Size * 0.5 )
-	surface.DrawLine( X + Size, Y - Size, X + Size, Y - Size * 0.5 )
+	surface_DrawLine( X + Size, Y + Size, X + Size, Y + Size * 0.5 )
+	surface_DrawLine( X + Size, Y - Size, X + Size, Y - Size * 0.5 )
 
-	surface.DrawLine( X - Size, Y - Size, X - Size * 0.5, Y - Size )
-	surface.DrawLine( X + Size, Y - Size, X + Size * 0.5, Y - Size )
+	surface_DrawLine( X - Size, Y - Size, X - Size * 0.5, Y - Size )
+	surface_DrawLine( X + Size, Y - Size, X + Size * 0.5, Y - Size )
 end

@@ -1,11 +1,27 @@
---DO NOT EDIT OR REUPLOAD THIS FILE
-
 AddCSLuaFile( "shared.lua" )
 AddCSLuaFile( "cl_init.lua" )
 include("shared.lua")
 
-function ENT:SpawnFunction( ply, tr, ClassName )
+-- TODO: Localize more functions and enums
+local Vector = Vector
+local CurTime = CurTime
+local IsValid = IsValid
+local IsEntity = IsEntity
+local FrameTime = FrameTime
 
+local isangle = isangle
+local istable = istable
+local isnumber = isnumber
+local isvector = isvector
+
+local ANG_ZERO = Angle( 0, 0, 0 )
+local VEC_ZERO = Vector( 0, 0, 0 )
+local VEC_X_ONE = Vector( 1, 0, 0 )
+local VEC_UP_100 = Vector( 0, 0, 100 )
+local ANG_YAW_NINETY = Angle( 0, 90, 0 )
+local INITIAL_POD_COLOR = Color( 255, 255, 255, 0 )
+
+function ENT:SpawnFunction( ply, tr, ClassName )
 	if not tr.Hit then return end
 
 	local ent = ents.Create( ClassName )
@@ -15,7 +31,6 @@ function ENT:SpawnFunction( ply, tr, ClassName )
 	ent:Activate()
 
 	return ent
-
 end
 
 function ENT:Initialize()
@@ -32,9 +47,8 @@ function ENT:Initialize()
 
 	if not IsValid( PObj ) then 
 		self:Remove()
-		
-		print("LFS: missing model. Plane terminated.")
-		
+		print( "LFS: missing model. Plane terminated." )
+
 		return
 	end
 
@@ -51,13 +65,11 @@ function ENT:Initialize()
 end
 
 function ENT:AutoAI()
-	if IsValid( self.dOwnerEntLFS ) then
-		if self.dOwnerEntLFS:InVehicle() then
-			if self.dOwnerEntLFS:IsAdmin() then
-				self:SetAI( true )
-			end
-		end
-	end
+	if not IsValid( self.dOwnerEntLFS ) then return end
+	if not self.dOwnerEntLFS:InVehicle() then return end
+	if not self.dOwnerEntLFS:IsAdmin() then return end
+
+	self:SetAI( true )
 end
 
 function ENT:OnStartMaintenance()
@@ -84,20 +96,16 @@ end
 
 function ENT:HandleMaintenance()
 	if not self.MaintenanceStart then return end
-
 	if not self:GetRepairMode() and not self:GetAmmoMode() then self:StopMaintenance() return end
 
-	local Progress = (CurTime() - self.MaintenanceStart) / self.MaintenanceTime
-
+	local Progress = ( CurTime() - self.MaintenanceStart ) / self.MaintenanceTime
 	self:SetMaintenanceProgress( Progress )
 
 	if Progress >= 1 then 
 		if self:GetRepairMode() then
-			self:SetHP( math.min(self:GetHP() + self.MaintenanceRepairAmount,self:GetMaxHP()) )
-			self:EmitSound("items/ammo_pickup.wav")
-
+			self:SetHP( math.min( self:GetHP() + self.MaintenanceRepairAmount, self:GetMaxHP() ) )
+			self:EmitSound( "items/ammo_pickup.wav" )
 			self:StartMaintenance()
-
 		else
 			self:ReloadWeapon()
 			self:StopMaintenance()
@@ -139,14 +147,12 @@ end
 
 function ENT:TakePrimaryAmmo( amount )
 	amount = amount or 1
-	
-	self:SetAmmoPrimary( math.max(self:GetAmmoPrimary() - amount,0) )
+	self:SetAmmoPrimary( math.max( self:GetAmmoPrimary() - amount, 0 ) )
 end
 
 function ENT:TakeSecondaryAmmo( amount )
 	amount = amount or 1
-	
-	self:SetAmmoSecondary( math.max(self:GetAmmoSecondary() - amount,0) )
+	self:SetAmmoSecondary( math.max( self:GetAmmoSecondary() - amount, 0 ) )
 end
 
 function ENT:PrimaryAttack()
@@ -159,18 +165,16 @@ end
 
 function ENT:SecondaryAttack()
 	if not self:CanSecondaryAttack() then return end
-	
 	self:SetNextSecondary( 0.15 )
-	
 	self:TakeSecondaryAmmo()
 end
 
 function ENT:OnReloadWeapon()
-	self:EmitSound("lfs/weapons_reload.wav")
+	self:EmitSound( "lfs/weapons_reload.wav" )
 end
 
 function ENT:OnUnloadWeapon()
-	self:EmitSound("weapons/357/357_reload4.wav")
+	self:EmitSound( "weapons/357/357_reload4.wav" )
 end
 
 function ENT:ReloadWeapon()
@@ -194,21 +198,21 @@ end
 
 function ENT:HandleWeapons(Fire1, Fire2)
 	local Driver = self:GetDriver()
-	
+
 	if IsValid( Driver ) then
 		if self:GetAmmoPrimary() > 0 then
 			Fire1 = Driver:KeyDown( IN_ATTACK )
 		end
-		
+
 		if self:GetAmmoSecondary() > 0 then
 			Fire2 = Driver:KeyDown( IN_ATTACK2 )
 		end
 	end
-	
+
 	if Fire1 then
 		self:PrimaryAttack()
 	end
-	
+
 	if Fire2 then
 		self:SecondaryAttack()
 	end
@@ -218,7 +222,7 @@ function ENT:OnTick()
 end
 
 function ENT:CalcFlightOverride( Pitch, Yaw, Roll, Stability )
-	return Pitch,Yaw,Roll,Stability,Stability,Stability
+	return Pitch, Yaw, Roll, Stability, Stability, Stability
 end
 
 function ENT:CalcFlight()
@@ -226,26 +230,26 @@ function ENT:CalcFlight()
 	local MaxPitch = MaxTurnSpeed.p
 	local MaxYaw = MaxTurnSpeed.y
 	local MaxRoll = MaxTurnSpeed.r
-	
+
 	local IsInVtolMode = self:IsVtolModeActive()
-	
+
 	local PhysObj = self:GetPhysicsObject()
 	if not IsValid( PhysObj ) then return end
-	
+
 	local Pod = self:GetDriverSeat()
 	if not IsValid( Pod ) then return end
-	
+
 	local Driver = Pod:GetDriver()
-	
+
 	local A = false
 	local D = false
-	
+
 	local LocalAngPitch = 0
 	local LocalAngYaw = 0
 	local LocalAngRoll = 0
-	
+
 	local AngDiff = 0
-	
+
 	if IsValid( Driver ) then 
 		local EyeAngles = Pod:WorldToLocalAngles( Driver:EyeAngles() )
 
@@ -266,24 +270,23 @@ function ENT:CalcFlight()
 		local Roll_R = Driver:lfsGetInput( "+ROLL" )
 		local Roll_L = Driver:lfsGetInput( "-ROLL" ) 
 
-		if not IsInVtolMode then
-			if Pitch_Up or Pitch_Dn then
-				EyeAngles = self:GetAngles()
-				
-				self.StoredEyeAngles = Angle(EyeAngles.p,EyeAngles.y,0)
-				
-				local X = (Pitch_Up and -90 or 0) + (Pitch_Dn and 90 or 0)
+		if not IsInVtolMode and ( Pitch_Up or Pitch_Dn ) then
+			EyeAngles = self:GetAngles()
+			EyeAngles.r = 0
 
-				LocalAngles = Angle(X,0,0)
-			end
+			self.StoredEyeAngles = EyeAngles
+
+			local X = ( Pitch_Up and -90 or 0 ) + ( Pitch_Dn and 90 or 0 )
+			LocalAngles = Angle( X, 0, 0 )
 		end
 
 		if Yaw_R or Yaw_L then
 			EyeAngles = self:GetAngles()
-			
-			self.StoredEyeAngles = Angle(EyeAngles.p,EyeAngles.y,0)
-			
-			LocalAngles.y = (Yaw_R and -90 or 0) + (Yaw_L and 90 or 0)
+			EyeAngles.r = 0
+
+			self.StoredEyeAngles = EyeAngles
+
+			LocalAngles.y = ( Yaw_R and -90 or 0 ) + ( Yaw_L and 90 or 0 )
 		end
 
 		if Yaw_R or Yaw_L then
@@ -296,12 +299,12 @@ function ENT:CalcFlight()
 
 		LocalAngPitch = LocalAngles.p
 		LocalAngYaw = LocalAngles.y
-		LocalAngRoll = LocalAngles.r + math.cos(CurTime()) * 2
+		LocalAngRoll = LocalAngles.r + math.cos( CurTime() ) * 2
 
 		local EyeAngForward = EyeAngles:Forward()
 		local Forward = self:GetForward()
 
-		AngDiff = math.deg( math.acos( math.Clamp( Forward:Dot(EyeAngForward) ,-1,1) ) )
+		AngDiff = math.deg( math.acos( math.Clamp( Forward:Dot( EyeAngForward ), -1, 1 ) ) )
 	else
 		local EyeAngles = self:GetAngles()
 		
@@ -322,19 +325,18 @@ function ENT:CalcFlight()
 		local EyeAngForward = EyeAngles:Forward()
 		local Forward = self:GetForward()
 		
-		AngDiff = math.deg( math.acos( math.Clamp( Forward:Dot(EyeAngForward) ,-1,1) ) )
+		AngDiff = math.deg( math.acos( math.Clamp( Forward:Dot( EyeAngForward ), -1, 1 ) ) )
 	end
-	
-	local WingFinFadeOut = math.max( (90 - AngDiff ) / 90, 0 )
-	local RudderFadeOut = math.max( (60 - AngDiff ) / 60, 0 )
+
+	local WingFinFadeOut = math.max( ( 90 - AngDiff ) / 90, 0 )
+	local RudderFadeOut = math.max( ( 60 - AngDiff ) / 60, 0 )
 
 	self:SteerWheel( LocalAngYaw )
-	
+
 	local Stability = self:GetStability()
+	local RollRate =  math.min( self:GetVelocity():Length() / math.min( self:GetMaxVelocity() * 0.5, 3000 ), 1 )
 
-	local RollRate =  math.min(self:GetVelocity():Length() / math.min(self:GetMaxVelocity() * 0.5,3000),1)
-
-	RudderFadeOut = math.max(RudderFadeOut,1 - RollRate)
+	RudderFadeOut = math.max( RudderFadeOut, 1 - RollRate )
 
 	local RollLeft = A and MaxRoll or 0
 	local RollRight = D and MaxRoll or 0
@@ -342,38 +344,36 @@ function ENT:CalcFlight()
 	if (RollLeft + RollRight) == 0 then
 		self.m_smRoll = 0
 	else
-		self.m_smRoll = self.m_smRoll and self.m_smRoll + ((RollRight - RollLeft) - self.m_smRoll) * FrameTime() * 5 or 0
+		self.m_smRoll = self.m_smRoll and self.m_smRoll + ( ( RollRight - RollLeft ) - self.m_smRoll ) * FrameTime() * 5 or 0
 
-		if (self.m_smRoll > 0 and RollLeft > 0) or (self.m_smRoll < 0 and RollRight > 0) then
+		if ( self.m_smRoll > 0 and RollLeft > 0 ) or ( self.m_smRoll < 0 and RollRight > 0 ) then
 			self.m_smRoll = 0
 		end
 	end
 
 	local ManualRoll = self.m_smRoll
 
-	local AutoRoll = (-LocalAngYaw * 22 * RollRate + LocalAngRoll * 3.5 * RudderFadeOut) * WingFinFadeOut
-	local VtolRoll = math.Clamp(((D and 10 or 0) - (A and 10 or 0) - self:GetAngles().r) * 5, -MaxRoll, MaxRoll)
+	local AutoRoll = ( -LocalAngYaw * 22 * RollRate + LocalAngRoll * 3.5 * RudderFadeOut ) * WingFinFadeOut
+	local VtolRoll = math.Clamp( ( ( D and 10 or 0 ) - ( A and 10 or 0 ) - self:GetAngles().r ) * 5, -MaxRoll, MaxRoll )
 
-	local P = math.Clamp(-LocalAngPitch * 25,-MaxPitch,MaxPitch)
-	local Y = math.Clamp(-LocalAngYaw * 160 * RudderFadeOut,-MaxYaw,MaxYaw)
-	local R = math.Clamp( (not A and not D) and AutoRoll or (IsInVtolMode and VtolRoll or ManualRoll),-MaxRoll ,MaxRoll )
-	
-	local Pitch,Yaw,Roll,StabW,StabE,StabR = self:CalcFlightOverride( P, Y, R, Stability )
-	
+	local P = math.Clamp( -LocalAngPitch * 25, -MaxPitch, MaxPitch )
+	local Y = math.Clamp( -LocalAngYaw * 160 * RudderFadeOut, -MaxYaw, MaxYaw )
+	local R = math.Clamp( (not A and not D) and AutoRoll or (IsInVtolMode and VtolRoll or ManualRoll), -MaxRoll, MaxRoll )
+
+	local Pitch, Yaw, Roll, StabW, StabE, StabR = self:CalcFlightOverride( P, Y, R, Stability )
+
 	local Mass = PhysObj:GetMass()
-	
-	self:ApplyAngForce( Angle(0,0,-self:GetAngVel().r + Roll * StabW) *  Mass * 500 * StabW )
-	
+
+	self:ApplyAngForce( Angle( 0, 0, -self:GetAngVel().r + Roll * StabW) *  Mass * 500 * StabW )
+
 	PhysObj:ApplyForceOffset( -self:GetWingUp() * self:GetWingVelocity() *  Mass * StabW, self:GetWingPos() )
-	
-	PhysObj:ApplyForceOffset( -self:GetElevatorUp() * (self:GetElevatorVelocity() + Pitch * StabE) * Mass * StabE, self:GetElevatorPos() )
-	
-	PhysObj:ApplyForceOffset( -self:GetRudderUp() * (math.Clamp(self:GetRudderVelocity(),-MaxYaw,MaxYaw) + Yaw * StabR) *  Mass * StabR, self:GetRudderPos() )
+	PhysObj:ApplyForceOffset( -self:GetElevatorUp() * ( self:GetElevatorVelocity() + Pitch * StabE ) * Mass * StabE, self:GetElevatorPos() )
+	PhysObj:ApplyForceOffset( -self:GetRudderUp() * ( math.Clamp( self:GetRudderVelocity(), -MaxYaw, MaxYaw ) + Yaw * StabR ) *  Mass * StabR, self:GetRudderPos() )
 
 	if self:IsSpaceShip() then
 		if self:GetEngineActive() then
 			if IsInVtolMode then
-				PhysObj:ApplyForceCenter( self:GetRight() * (self:WorldToLocal( self:GetPos() + self:GetVelocity() ).y + ManualRoll) * Mass * 0.2 )
+				PhysObj:ApplyForceCenter( self:GetRight() * ( self:WorldToLocal( self:GetPos() + self:GetVelocity() ).y + ManualRoll ) * Mass * 0.2 )
 			else
 				PhysObj:ApplyForceCenter( self:GetRight() * self:WorldToLocal( self:GetPos() + self:GetVelocity() ).y * Mass * 0.01 )
 			end
@@ -382,13 +382,12 @@ function ENT:CalcFlight()
 		PhysObj:ApplyForceCenter( self:GetRight() * self:WorldToLocal( self:GetPos() + self:GetVelocity() ).y * Mass * 0.01 * Stability )
 	end
 
-	self:SetRotPitch( (Pitch / MaxPitch) * 30 )
-	self:SetRotYaw( (Yaw / MaxYaw) * 30 )
-	self:SetRotRoll( (Roll / MaxRoll) * 30 )
+	self:SetRotPitch( ( Pitch / MaxPitch ) * 30 )
+	self:SetRotYaw( ( Yaw / MaxYaw ) * 30 )
+	self:SetRotRoll( ( Roll / MaxRoll ) * 30 )
 end
 
 function ENT:Think()
-
 	self:HandleActive()
 	self:HandleStart()
 	self:HandleLandingGear()
@@ -405,22 +404,21 @@ function ENT:Think()
 	return true
 end
 
+-- TODO: Cut down on repeat angl ecreation
 function ENT:SteerWheel( SteerAngle )
-	if IsValid( self.wheel_C_master ) then
-		if isvector( self.WheelPos_L ) and isvector( self.WheelPos_R ) and isvector( self.WheelPos_C ) then
-			local SteerMaster = self.wheel_C_master
-			local smPObj = SteerMaster:GetPhysicsObject()
-			
-			if IsValid( smPObj ) then
-				if smPObj:IsMotionEnabled() then
-					smPObj:EnableMotion( false )
-				end
-			end
-			
-			local Mirror = ((self.WheelPos_L.x + self.WheelPos_R.x) * 0.5 > self.WheelPos_C.x) and -1 or 1
-			
-			self.wheel_C_master:SetAngles( self:LocalToWorldAngles( Angle(0,math.Clamp(SteerAngle * Mirror,-45,45),0) ) )
+	if not IsValid( self.wheel_C_master ) then return end
+
+	if isvector( self.WheelPos_L ) and isvector( self.WheelPos_R ) and isvector( self.WheelPos_C ) then
+		local SteerMaster = self.wheel_C_master
+		local smPObj = SteerMaster:GetPhysicsObject()
+
+		if IsValid( smPObj ) and smPObj:IsMotionEnabled() then
+			smPObj:EnableMotion( false )
 		end
+
+		local Mirror = ( ( self.WheelPos_L.x + self.WheelPos_R.x ) * 0.5 > self.WheelPos_C.x ) and -1 or 1
+
+		self.wheel_C_master:SetAngles( self:LocalToWorldAngles( Angle( 0, math.Clamp( SteerAngle * Mirror, -45, 45 ), 0 ) ) )
 	end
 end
 
@@ -429,17 +427,13 @@ function ENT:HitGround()
 		self.obbvc = self:OBBCenter() 
 		self.obbvm = self:OBBMins().z
 	end
-	
+
 	local tr = util.TraceLine( {
 		start = self:LocalToWorld( self.obbvc ),
-		endpos = self:LocalToWorld( self.obbvc + Vector(0,0,self.obbvm - 100) ),
-		filter = function( ent ) 
-			if ( ent == self ) then 
-				return false
-			end
-		end
+		endpos = self:LocalToWorld( self.obbvc + Vector( 0, 0, self.obbvm - 100 ) ),
+		filter = { self }
 	} )
-	
+
 	return tr.Hit 
 end
 
@@ -451,7 +445,7 @@ function ENT:HandleEngine()
 	local MaxRPM = self:GetMaxRPM()
 	local LimitRPM = self:GetLimitRPM()
 	local MaxVelocity = self:GetMaxVelocity()
-	
+
 	local EngActive = self:GetEngineActive()
 
 	local KeyThrottle = false
@@ -461,29 +455,26 @@ function ENT:HandleEngine()
 	
 	if EngActive then
 		local Pod = self:GetDriverSeat()
-		
 		if not IsValid( Pod ) then return end
-		
-		local Driver = Pod:GetDriver()
-		
+
 		local RPMAdd = 0
-		
+		local Driver = Pod:GetDriver()
+
 		if IsValid( Driver ) then 
 			KeyThrottle = Driver:lfsGetInput( "+THROTTLE" )
 			KeyBrake = Driver:lfsGetInput( "-THROTTLE" )
-			
-			RPMAdd = ((KeyThrottle and self:GetThrottleIncrement() or 0) - (KeyBrake and self:GetThrottleIncrement() or 0)) * FrameTime()
+
+			RPMAdd = ( ( KeyThrottle and self:GetThrottleIncrement() or 0 ) - ( KeyBrake and self:GetThrottleIncrement() or 0 ) ) * FrameTime()
 		end
-		
+
 		if KeyThrottle ~= self.oldKeyThrottle then
 			self.oldKeyThrottle = KeyThrottle
-			
 			self:OnKeyThrottle( KeyThrottle )
 		end
-		
-		self.TargetRPM = math.Clamp( self.TargetRPM + RPMAdd,IdleRPM,((self:GetAI() or KeyThrottle) and self:GetWepEnabled()) and LimitRPM or MaxRPM)
+
+		self.TargetRPM = math.Clamp( self.TargetRPM + RPMAdd, IdleRPM, ( ( self:GetAI() or KeyThrottle ) and self:GetWepEnabled() ) and LimitRPM or MaxRPM )
 	else
-		self.TargetRPM = self.TargetRPM - math.Clamp(self.TargetRPM,-250,250)
+		self.TargetRPM = self.TargetRPM - math.Clamp( self.TargetRPM, -250, 250 )
 	end
 
 	if isnumber( self.VtolAllowInputBelowThrottle ) and not self:GetAI() then
@@ -492,75 +483,64 @@ function ENT:HandleEngine()
 		if self:GetRPM() < MaxRPMVtolMin and not KeyThrottle then
 			self.TargetRPM = math.min( self.TargetRPM, MaxRPMVtolMin )
 		end
-
-		--[[ -- while it makes perfect sense to clamp it in both directions, it just doesnt feel right
-		local MaxRPMVtolMax = self:GetMaxRPM() * (self.VtolAllowInputBelowThrottle / 100)
-		if self:GetRPM() > MaxRPMVtolMax and not KeyBrake then
-			self.TargetRPM = math.max( self.TargetRPM, MaxRPMVtolMax )
-		end
-		]]--
 	end
 
-	self:SetRPM( self:GetRPM() + (self.TargetRPM - self:GetRPM()) * FrameTime() )
-	
+	self:SetRPM( self:GetRPM() + ( self.TargetRPM - self:GetRPM() ) * FrameTime() )
+
 	local PhysObj = self:GetPhysicsObject()
-	
 	if not IsValid( PhysObj ) then return end
-	
-	local fThrust = MaxVelocity * (self:GetRPM() / LimitRPM) - self:GetForwardVelocity()
-	
+
+	local fThrust = MaxVelocity * ( self:GetRPM() / LimitRPM ) - self:GetForwardVelocity()
+
 	if not self:IsSpaceShip() and not self:GetAI() then fThrust = math.max( fThrust ,0 ) end
-	
+
 	local Force = fThrust / MaxVelocity * self:GetMaxThrust() * LimitRPM * FrameTime()
 	
 	if self:IsDestroyed() or not EngActive then
 		self:StopEngine()
-		
 		return
 	end
-	
-	if self.VerticalTakeoff then
-		if self:IsSpaceShip() then
-			local Driver = self:GetDriver()
 
-			if IsValid( Driver ) then 
-				local IsVtolActive = self:IsVtolModeActive()
+	if self.VerticalTakeoff and self:IsSpaceShip() then
+		local Driver = self:GetDriver()
 
-				if self.oldVtolMode ~= IsVtolActive then
-					self.oldVtolMode = IsVtolActive
-					self:OnVtolMode( IsVtolActive )
-				end
+		if IsValid( Driver ) then 
+			local IsVtolActive = self:IsVtolModeActive()
 
-				if IsVtolActive then
-					if isnumber( self.VtolAllowInputBelowThrottle ) then
-						local KeyThrottle = Driver:lfsGetInput( "+PITCH" )
-						local KeyBrake = Driver:lfsGetInput( "-THROTTLE" ) and self:GetThrottlePercent() <= 10
-			
-						local Up = KeyThrottle and self:GetThrustVtol() or 0
-						local Down = KeyBrake and -self:GetThrustVtol() or 0
-						
-						local VtolForce = (Up + Down) * PhysObj:GetMass() * 0.015
-						
-						self.smfForce = isnumber( self.smfForce ) and (self.smfForce + (VtolForce - self.smfForce) * FrameTime() * 2) or VtolForce
-						self:ApplyThrustVtol( PhysObj, self:GetUp(), self.smfForce )
-					else
-						self.TargetRPM = (self:GetVelocity():Length() / MaxVelocity) * LimitRPM
-						
-						local Up = Driver:lfsGetInput( "+THROTTLE" ) and self:GetThrustVtol() or 0
-						local Down = Driver:lfsGetInput( "-THROTTLE" ) and -self:GetThrustVtol() or 0
-						
-						local VtolForce = (Up + Down) * PhysObj:GetMass() * 0.015
-						
-						self.smfForce = isnumber( self.smfForce ) and (self.smfForce + (VtolForce - self.smfForce) * FrameTime() * 2) or VtolForce
-						self:ApplyThrustVtol( PhysObj, self:GetUp(), self.smfForce )
-						
-						return
-					end
+			if self.oldVtolMode ~= IsVtolActive then
+				self.oldVtolMode = IsVtolActive
+				self:OnVtolMode( IsVtolActive )
+			end
+
+			if IsVtolActive then
+				if isnumber( self.VtolAllowInputBelowThrottle ) then
+					KeyThrottle = Driver:lfsGetInput( "+PITCH" )
+					KeyBrake = Driver:lfsGetInput( "-THROTTLE" ) and self:GetThrottlePercent() <= 10
+
+					local Up = KeyThrottle and self:GetThrustVtol() or 0
+					local Down = KeyBrake and -self:GetThrustVtol() or 0
+
+					local VtolForce = ( Up + Down ) * PhysObj:GetMass() * 0.015
+
+					self.smfForce = isnumber( self.smfForce ) and ( self.smfForce + (VtolForce - self.smfForce) * FrameTime() * 2 ) or VtolForce
+					self:ApplyThrustVtol( PhysObj, self:GetUp(), self.smfForce )
+				else
+					self.TargetRPM = ( self:GetVelocity():Length() / MaxVelocity ) * LimitRPM
+
+					local Up = Driver:lfsGetInput( "+THROTTLE" ) and self:GetThrustVtol() or 0
+					local Down = Driver:lfsGetInput( "-THROTTLE" ) and -self:GetThrustVtol() or 0
+
+					local VtolForce = ( Up + Down ) * PhysObj:GetMass() * 0.015
+
+					self.smfForce = isnumber( self.smfForce ) and ( self.smfForce + (VtolForce - self.smfForce) * FrameTime() * 2 ) or VtolForce
+					self:ApplyThrustVtol( PhysObj, self:GetUp(), self.smfForce )
+
+					return
 				end
 			end
 		end
 	end
-	
+
 	self:ApplyThrust( PhysObj, self:GetForward(), Force )
 end
 
@@ -569,7 +549,7 @@ end
 
 function ENT:IsVtolModeActive()
 	if not self.VerticalTakeoff then return false end
-	
+
 	if isnumber( self.VtolAllowInputBelowThrottle ) then
 		return self.VtolAllowInputBelowThrottle > self:GetThrottlePercent()
 	else
@@ -587,8 +567,7 @@ function ENT:ApplyThrust( PhysObj, vDirection, fForce )
 end
 
 function ENT:GetThrottleIncrement()
-	self.RPMThrottleIncrement = isnumber( self.RPMThrottleIncrement ) and self.RPMThrottleIncrement or (self:IsSpaceShip() and 2000 or 350)
-	
+	self.RPMThrottleIncrement = isnumber( self.RPMThrottleIncrement ) and self.RPMThrottleIncrement or ( self:IsSpaceShip() and 2000 or 350 )
 	return self.RPMThrottleIncrement
 end
 
@@ -597,10 +576,10 @@ function ENT:HandleActive()
 
 	if IsValid( gPod ) then
 		local Gunner = gPod:GetDriver()
-		
+
 		if Gunner ~= self:GetGunner() then
 			self:SetGunner( Gunner )
-			
+
 			if IsValid( Gunner ) then
 				Gunner:CrosshairEnable()
 				Gunner:lfsBuildControls()
@@ -651,19 +630,18 @@ function ENT:HandleActive()
 
 	self.NextSetInertia = self.NextSetInertia or 0
 
-	if self.NextSetInertia < Time then
-		local inea = Active or self:GetEngineActive() or (self:GetStability() > 0.1) or not self:HitGround()
-		local TargetInertia = inea and self.Inertia or self.LFSInertiaDefault
+	if self.NextSetInertia >= Time then return end
+	local inea = Active or self:GetEngineActive() or (self:GetStability() > 0.1) or not self:HitGround()
+	local TargetInertia = inea and self.Inertia or self.LFSInertiaDefault
 
-		self.NextSetInertia = Time + 1 -- !!!hack!!! reset every second. There are so many factors that could possibly break this like touching the planes with the physgun which sometimes causes ent:GetInertia() to return a wrong value?!?!
-		
-		local PObj = self:GetPhysicsObject()
-		if IsValid( PObj ) then
-			if PObj:IsMotionEnabled() then -- only set when unfrozen
-				PObj:SetMass( self.Mass ) -- !!!hack!!!
-				PObj:SetInertia( TargetInertia ) -- !!!hack!!!
-			end
-		end
+	self.NextSetInertia = Time + 1 -- !!!hack!!! reset every second. There are so many factors that could possibly break this like touching the planes with the physgun which sometimes causes ent:GetInertia() to return a wrong value?!?!
+
+	local PObj = self:GetPhysicsObject()
+	if not IsValid( PObj ) then return end
+
+	if PObj:IsMotionEnabled() then -- only set when unfrozen
+		PObj:SetMass( self.Mass ) -- !!!hack!!!
+		PObj:SetInertia( TargetInertia ) -- !!!hack!!!
 	end
 end
 
@@ -673,10 +651,10 @@ end
 
 function ENT:HandleStart()
 	local Driver = self:GetDriver()
-	
+
 	if IsValid( Driver ) then
 		local KeyReload = Driver:lfsGetInput( "ENGINE" )
-		
+
 		if self.OldKeyReload ~= KeyReload then
 			self.OldKeyReload = KeyReload
 			if KeyReload then
@@ -688,10 +666,10 @@ end
 
 function ENT:HandleLandingGear()
 	local Driver = self:GetDriver()
-	
+
 	if IsValid( Driver ) then
 		local KeyJump = Driver:lfsGetInput( "VSPEC" )
-		
+
 		if self.OldKeyJump ~= KeyJump then
 			self.OldKeyJump = KeyJump
 			if KeyJump then
@@ -700,35 +678,35 @@ function ENT:HandleLandingGear()
 			end
 		end
 	end
-	
-	local TValAuto = (self:GetStability() > 0.3) and 0 or 1
+
+	local TValAuto = ( self:GetStability() > 0.3 ) and 0 or 1
 	local TValManual = self.LandingGearUp and 0 or 1
-	
+
 	local TVal = self.WheelAutoRetract and TValAuto or TValManual
 	local Speed = FrameTime()
 	local Speed2 = Speed * math.abs( math.cos( math.rad( self:GetLGear() * 180 ) ) )
-	
-	self:SetLGear( self:GetLGear() + math.Clamp(TVal - self:GetLGear(),-Speed,Speed) )
-	self:SetRGear( self:GetRGear() + math.Clamp(TVal - self:GetRGear(),-Speed2,Speed2) )
+
+	self:SetLGear( self:GetLGear() + math.Clamp( TVal - self:GetLGear(), -Speed, Speed ) )
+	self:SetRGear( self:GetRGear() + math.Clamp( TVal - self:GetRGear(), -Speed2, Speed2 ) )
 	
 	if IsValid( self.wheel_R ) then
 		local RWpObj = self.wheel_R:GetPhysicsObject()
 		if IsValid( RWpObj ) then
-			RWpObj:SetMass( 1 + (self.WheelMass - 1) * self:GetRGear() ^ 5 )
+			RWpObj:SetMass( 1 + ( self.WheelMass - 1 ) * self:GetRGear() ^ 5 )
 		end
 	end
-	
+
 	if IsValid( self.wheel_L ) then
 		local LWpObj = self.wheel_L:GetPhysicsObject()
 		if IsValid( LWpObj ) then
-			LWpObj:SetMass( 1 + (self.WheelMass - 1) * self:GetLGear() ^ 5 )
+			LWpObj:SetMass( 1 + ( self.WheelMass - 1 ) * self:GetLGear() ^ 5 )
 		end
 	end
-	
+
 	if IsValid( self.wheel_C ) then
 		local CWpObj = self.wheel_C:GetPhysicsObject()
 		if IsValid( CWpObj ) then
-			CWpObj:SetMass( 1 + (self.WheelMass - 1) * self:GetRGear() )
+			CWpObj:SetMass( 1 + ( self.WheelMass - 1 ) * self:GetRGear() )
 		end
 	end
 end
@@ -746,48 +724,48 @@ function ENT:IsEngineStartAllowed()
 
 	local Driver = self:GetDriver()
 	local Pod = self:GetDriverSeat()
-	
+
 	if self:GetAI() or not IsValid( Driver ) or not IsValid( Pod ) then return true end
 
 	local EyeAngles = Pod:WorldToLocalAngles( Driver:EyeAngles() )
-	local AimDirToForwardDir = math.deg( math.acos( math.Clamp( self:GetForward():Dot( EyeAngles:Forward() ) ,-1,1) ) )
-	
+	local AimDirToForwardDir = math.deg( math.acos( math.Clamp( self:GetForward():Dot( EyeAngles:Forward() ), -1, 1 ) ) )
+
 	local CanStart = AimDirToForwardDir < 10
-	
+
 	if not CanStart then
 		net.Start( "lfs_failstartnotify" )
 		net.Send( Driver )
 	end
-	
+
 	return CanStart
 end
 
 function ENT:StartEngine()
 	if self:GetEngineActive() or self:IsDestroyed() or self:InWater() or not self:IsEngineStartAllowed() or self:GetRotorDestroyed() then return end
-	
+
 	self:SetEngineActive( true )
 	self:OnEngineStarted()
-	
+
 	self:InertiaSetNow()
 end
 
 function ENT:StopEngine()
 	if not self:GetEngineActive() then return end
-	
+
 	self:SetEngineActive( false )
 	self:OnEngineStopped()
 end
 
 function ENT:ToggleLandingGear()
 	self.LandingGearUp = not self.LandingGearUp
-	
+
 	self:OnLandingGearToggled( self.LandingGearUp )
 end
 
 function ENT:RaiseLandingGear()
 	if not self.LandingGearUp then
 		self.LandingGearUp = true
-		
+
 		self:OnLandingGearToggled( self.LandingGearUp )
 	end
 end
@@ -795,7 +773,7 @@ end
 function ENT:DeployLandingGear()
 	if self.LandingGearUp then
 		self.LandingGearUp = false
-		
+
 		self:OnLandingGearToggled( self.LandingGearUp )
 	end
 end
@@ -825,10 +803,8 @@ end
 function ENT:Use( ply )
 	if not IsValid( ply ) then return end
 
-	if self:GetlfsLockedStatus() or (simfphys.LFS.TeamPassenger:GetBool() and ((self:GetAITEAM() ~= ply:lfsGetAITeam()) and ply:lfsGetAITeam() ~= 0 and self:GetAITEAM() ~= 0)) then 
-
+	if self:GetlfsLockedStatus() or ( simfphys.LFS.TeamPassenger:GetBool() and ( ( self:GetAITEAM() ~= ply:lfsGetAITeam() ) and ply:lfsGetAITeam() ~= 0 and self:GetAITEAM() ~= 0 ) ) then 
 		self:EmitSound( "doors/default_locked.wav" )
-
 		return
 	end
 
@@ -839,11 +815,13 @@ function ENT:AlignView( ply )
 	if not IsValid( ply ) then return end
 
 	timer.Simple( FrameTime() * 2, function()
-		if not IsValid( ply ) or not IsValid( self ) then return end
+		if not IsValid( ply ) then return end
+		if not IsValid( self ) then return end
+
 		local Ang = self:GetAngles()
 		Ang.r = 0
 		ply:SetEyeAngles( Ang )
-	end)
+	end )
 end
 
 function ENT:SetPassenger( ply )
@@ -851,24 +829,25 @@ function ENT:SetPassenger( ply )
 
 	local AI = self:GetAI()
 	local DriverSeat = self:GetDriverSeat()
-	
+
 	if IsValid( DriverSeat ) and not IsValid( DriverSeat:GetDriver() ) and not ply:KeyDown( IN_WALK ) and not AI then
 		ply:EnterVehicle( DriverSeat )
 	else
 		local Seat = NULL
 		local Dist = 500000
-		
+
+		-- TODO: Can this be ipairs
 		for _, v in pairs( self:GetPassengerSeats() ) do
 			if IsValid( v ) and not IsValid( v:GetDriver() ) then
-				local cDist = (v:GetPos() - ply:GetPos()):Length()
-				
+				local cDist = ( v:GetPos() - ply:GetPos() ):Length()
+
 				if cDist < Dist then
 					Seat = v
 					Dist = cDist
 				end
 			end
 		end
-		
+
 		if IsValid( Seat ) then
 			ply:EnterVehicle( Seat )
 		else
@@ -883,39 +862,36 @@ function ENT:ConvTick()
 	return FrameTime() * 66.66666
 end
 
+-- TODO: Is this still needed?
 function ENT:IsBrokenFrameTime()
 	if self.ftBork == nil then
 		local FT = FrameTime()
-		
-		self.ftBork = (FT > 0.015 and FT < 0.015625) or (FT < (1 / 70) and FT > (1 / 67))
-		
+
+		self.ftBork = ( FT > 0.015 and FT < 0.015625 ) or ( FT < (1 / 70) and FT > ( 1 / 67 ) )
+
 		if self.ftBork then
-			print("[LFS] skipping FrameTime detected. Running on emergency-code. Please check your servers -tickrate setting!")
+			print( "[LFS] skipping FrameTime detected. Running on emergency-code. Please check your servers -tickrate setting!" )
 		end
 	end
-	
+
 	return self.ftBork
 end
 
 function ENT:GetWingVelocity()
 	local CurPos = self:GetWingPos()
 	self.wpOld = self.wpOld or CurPos
-	
-	local Vel = (CurPos - self.wpOld) * 66.66666 / self:ConvTick()
-	
+
+	local Vel = ( CurPos - self.wpOld ) * 66.66666 / self:ConvTick()
 	local VelForward = Vel:GetNormalized()
-
 	local Up = self:GetWingUp()
-	
-	self.wpOld = CurPos
-	
-	local Az = math.asin( math.Clamp( Up:Dot(VelForward) ,-1,1) )
 
+	self.wpOld = CurPos
+
+	local Az = math.asin( math.Clamp( Up:Dot( VelForward ), -1, 1 ) )
 	local Fz = math.sin( Az ) * Vel:Length()
-	
+
 	if self:IsBrokenFrameTime() then -- !!!hack!!! some people run their servers on a what i call "broken" tickrate which skips one tick every second. This usually happens around the frametimes defined in this function
-		self.smFzW = self.smFzW and (self.smFzW + (Fz - self.smFzW)) * FrameTime() * 40 or 0 -- by smoothing out the velocity we can avoid unwanted fluctuations
-	
+		self.smFzW = self.smFzW and ( self.smFzW + ( Fz - self.smFzW ) ) * FrameTime() * 40 or 0 -- by smoothing out the velocity we can avoid unwanted fluctuations
 		return self.smFzW
 	else
 		return Fz
@@ -925,19 +901,18 @@ end
 function ENT:GetElevatorVelocity()
 	local CurPos = self:GetElevatorPos()
 	self.epOld = self.epOld or CurPos
-	
-	local Vel = (CurPos - self.epOld) * 66.66666 / self:ConvTick()
+
+	local Vel = ( CurPos - self.epOld ) * 66.66666 / self:ConvTick()
 	local VelForward = Vel:GetNormalized()
 	local Up = self:GetElevatorUp()
-	
+
 	self.epOld = CurPos
 
-	local Az = math.asin( math.Clamp( Up:Dot(VelForward) ,-1,1) )
+	local Az = math.asin( math.Clamp( Up:Dot( VelForward ), -1, 1) )
 	local Fz = math.sin( Az ) * Vel:Length()
-	
+
 	if self:IsBrokenFrameTime() then -- !!!hack!!! some people run their servers on a what i call "broken" tickrate which skips one tick every second. This usually happens around the frametimes defined in this function
-		self.smFzE = self.smFzE and (self.smFzE + (Fz - self.smFzE)) * FrameTime() * 40 or 0 -- by smoothing out the velocity we can avoid unwanted fluctuations
-	
+		self.smFzE = self.smFzE and ( self.smFzE + ( Fz - self.smFzE ) ) * FrameTime() * 40 or 0 -- by smoothing out the velocity we can avoid unwanted fluctuations
 		return self.smFzE
 	else
 		return Fz
@@ -947,19 +922,19 @@ end
 function ENT:GetRudderVelocity()
 	local CurPos = self:GetRudderPos()
 	self.rpOld = self.rpOld or CurPos
-	
-	local Vel = (CurPos - self.rpOld) * 66.66666 / self:ConvTick()
+
+	local Vel = ( CurPos - self.rpOld ) * 66.66666 / self:ConvTick()
 	local VelForward = Vel:GetNormalized()
 	local Up = self:GetRudderUp()
-	
+
 	self.rpOld = CurPos
 
-	local Az = math.asin( math.Clamp( Up:Dot(VelForward) ,-1,1) )
+	local Az = math.asin( math.Clamp( Up:Dot( VelForward ), -1, 1) )
 	local Fz = math.sin( Az ) * Vel:Length()
 
 	if self:IsBrokenFrameTime() then -- !!!hack!!! some people run their servers on a what i call "broken" tickrate which skips one tick every second. This usually happens around the frametimes defined in this function
-		self.smFzR= self.smFzR and (self.smFzR + (Fz - self.smFzR)) * FrameTime() * 40 or 0 -- by smoothing out the velocity we can avoid unwanted fluctuations
-	
+		self.smFzR = self.smFzR and ( self.smFzR + ( Fz - self.smFzR ) ) * FrameTime() * 40 or 0 -- by smoothing out the velocity we can avoid unwanted fluctuations
+
 		return self.smFzR
 	else
 		return Fz
@@ -968,16 +943,17 @@ end
 
 function ENT:InWater()
 	local InWater = self:WaterLevel() > 2
-	
+
 	if InWater then
 		self.nfwater = self.nfwater or 0
-		
+
 		if self.nfwater < CurTime() then
 			self.nfwater = CurTime() + 0.02
 			local PhysObj = self:GetPhysicsObject()
 			if IsValid( PhysObj ) then
 				PhysObj:ApplyForceCenter( -self:GetVelocity() * PhysObj:GetMass() * 0.1 )
 			end
+
 			self:ApplyAngForce( -self:GetAngVel() * PhysObj:GetMass() * 25 )
 			
 			if self:GetAI() then
@@ -994,12 +970,12 @@ function ENT:InWater()
 end
 
 function ENT:GetStability()
-	local Stability = math.abs( math.Clamp( self:GetForwardVelocity() / self:GetMaxPerfVelocity(),-self:GetMaxStability(),self:GetMaxStability() ) )
+	local Stability = math.abs( math.Clamp( self:GetForwardVelocity() / self:GetMaxPerfVelocity(), -self:GetMaxStability(), self:GetMaxStability() ) )
 
 	if self:IsSpaceShip() then
-		local TargetStability = self:IsDestroyed() and 0.1 or (self:GetEngineActive() and self.Stability or 0)
+		local TargetStability = self:IsDestroyed() and 0.1 or ( self:GetEngineActive() and self.Stability or 0 )
 
-		self.smStablty = self.smStablty and self.smStablty + (TargetStability - self.smStablty) * FrameTime() or 0
+		self.smStablty = self.smStablty and self.smStablty + ( TargetStability - self.smStablty ) * FrameTime() or 0
 
 		if TargetStability <= 0 then
 			self.smStablty = 0
@@ -1016,126 +992,125 @@ function ENT:GetForwardVelocity()
 	local VelForward = Velocity:GetNormalized()
 
 	local Forward = self:GetForward()
-	
-	local Ax = math.acos( math.Clamp( Forward:Dot(VelForward) ,-1,1) )
-
+	-- TODO: I see this same calculation often, can we extract it to a well-named helper function somewhere?
+	local Ax = math.acos( math.Clamp( Forward:Dot( VelForward ), -1, 1 ) )
 	local Fx = math.cos( Ax ) * Velocity:Length()
 	
 	return Fx
 end
 
+-- TODO: Reduce scoping here, extract inner stuff to separate functions
+-- TODO: Reduce the creation of new vectors and angles
+-- TOOD: Reduce duplication, lots of duplicate code that could be shared
 function ENT:InitWheels()
 	if isnumber( self.WheelMass ) and isnumber( self.WheelRadius ) then
 		if isvector( self.WheelPos_L ) then
 			local wheel_L = ents.Create( "prop_physics" )
-		
+
 			if IsValid( wheel_L ) then
 				wheel_L:SetPos( self:LocalToWorld( self.WheelPos_L ) )
-				wheel_L:SetAngles( self:LocalToWorldAngles( Angle(0,90,0) ) )
-				
+				wheel_L:SetAngles( self:LocalToWorldAngles( ANG_YAW_NINETY ) )
+
 				wheel_L:SetModel( "models/props_vehicles/tire001c_car.mdl" )
 				wheel_L:Spawn()
 				wheel_L:Activate()
-				
+
 				wheel_L:SetNoDraw( true )
 				wheel_L:DrawShadow( false )
 				wheel_L.DoNotDuplicate = true
-				
+
 				local radius = self.WheelRadius
-				
+
 				wheel_L:PhysicsInitSphere( radius, "jeeptire" )
-				wheel_L:SetCollisionBounds( Vector(-radius,-radius,-radius), Vector(radius,radius,radius) )
-				
+				wheel_L:SetCollisionBounds( Vector( -radius, -radius, -radius ), Vector( radius, radius, radius ) )
+
 				local LWpObj = wheel_L:GetPhysicsObject()
 				if not IsValid( LWpObj ) then
 					self:Remove()
-					
+
 					print("LFS: Failed to initialize landing gear phys model. Plane terminated.")
 					return
 				end
-			
-				LWpObj:EnableMotion(false)
+
+				LWpObj:EnableMotion( false )
 				LWpObj:SetMass( self.WheelMass )
-				
+
 				self.wheel_L = wheel_L
 				self:DeleteOnRemove( wheel_L )
 				self:dOwner( wheel_L )
-				
-				self:dOwner( constraint.Axis( wheel_L, self, 0, 0, LWpObj:GetMassCenter(), wheel_L:GetPos(), 0, 0, 50, 0, Vector(1,0,0) , false ) )
+
+				self:dOwner( constraint.Axis( wheel_L, self, 0, 0, LWpObj:GetMassCenter(), wheel_L:GetPos(), 0, 0, 50, 0, VEC_X_ONE, false ) )
 				self:dOwner( constraint.NoCollide( wheel_L, self, 0, 0 ) )
-				
+
 				LWpObj:EnableMotion( true )
 				LWpObj:EnableDrag( false ) 
-				
 			else
 				self:Remove()
-			
 				print("LFS: Failed to initialize landing gear. Plane terminated.")
 			end
 		end
-		
+
 		if isvector( self.WheelPos_R ) then
 			local wheel_R = ents.Create( "prop_physics" )
-			
+
 			if IsValid( wheel_R ) then
 				wheel_R:SetPos( self:LocalToWorld(  self.WheelPos_R ) )
-				wheel_R:SetAngles( self:LocalToWorldAngles( Angle(0,90,0) ) )
-				
+				wheel_R:SetAngles( self:LocalToWorldAngles( ANG_YAW_NINETY ) )
+
 				wheel_R:SetModel( "models/props_vehicles/tire001c_car.mdl" )
 				wheel_R:Spawn()
 				wheel_R:Activate()
-				
+
 				wheel_R:SetNoDraw( true )
 				wheel_R:DrawShadow( false )
 				wheel_R.DoNotDuplicate = true
-				
+
 				local radius = self.WheelRadius
-				
+
 				wheel_R:PhysicsInitSphere( radius, "jeeptire" )
-				wheel_R:SetCollisionBounds( Vector(-radius,-radius,-radius), Vector(radius,radius,radius) )
-				
+				wheel_R:SetCollisionBounds( Vector( -radius, -radius, -radius ), Vector( radius, radius, radius ) )
+
 				local RWpObj = wheel_R:GetPhysicsObject()
 				if not IsValid( RWpObj ) then
 					self:Remove()
-					
-					print("LFS: Failed to initialize landing gear phys model. Plane terminated.")
+
+					print( "LFS: Failed to initialize landing gear phys model. Plane terminated." )
 					return
 				end
-			
+
 				RWpObj:EnableMotion(false)
 				RWpObj:SetMass( self.WheelMass )
-				
+
 				self.wheel_R = wheel_R
 				self:DeleteOnRemove( wheel_R )
 				self:dOwner( wheel_R )
-				
-				self:dOwner( constraint.Axis( wheel_R, self, 0, 0, RWpObj:GetMassCenter(), wheel_R:GetPos(), 0, 0, 50, 0, Vector(1,0,0) , false ) )
+
+				self:dOwner( constraint.Axis( wheel_R, self, 0, 0, RWpObj:GetMassCenter(), wheel_R:GetPos(), 0, 0, 50, 0, VEC_X_ONE, false ) )
 				self:dOwner( constraint.NoCollide( wheel_R, self, 0, 0 ) )
-				
+
 				RWpObj:EnableMotion( true )
 				RWpObj:EnableDrag( false ) 
 			else
 				self:Remove()
-			
 				print("LFS: Failed to initialize landing gear. Plane terminated.")
 			end
 		end
-		
+
 		if isvector( self.WheelPos_C ) then
 			local SteerMaster = ents.Create( "prop_physics" )
-			
+
 			if IsValid( SteerMaster ) then
 				SteerMaster:SetModel( "models/hunter/plates/plate025x025.mdl" )
 				SteerMaster:SetPos( self:GetPos() )
-				SteerMaster:SetAngles( Angle(0,90,0) )
+				SteerMaster:SetAngles( ANG_YAW_NINETY)
 				SteerMaster:Spawn()
 				SteerMaster:Activate()
-				
+
 				local smPObj = SteerMaster:GetPhysicsObject()
 				if IsValid( smPObj ) then
 					smPObj:EnableMotion( false )
 				end
-				
+
 				SteerMaster:SetOwner( self )
 				SteerMaster:DrawShadow( false )
 				SteerMaster:SetNotSolid( true )
@@ -1143,60 +1118,59 @@ function ENT:InitWheels()
 				SteerMaster.DoNotDuplicate = true
 				self:DeleteOnRemove( SteerMaster )
 				self:dOwner( SteerMaster )
-				
+
 				self.wheel_C_master = SteerMaster
-				
+
 				local wheel_C = ents.Create( "prop_physics" )
-				
+
 				if IsValid( wheel_C ) then
 					wheel_C:SetPos( self:LocalToWorld( self.WheelPos_C ) )
-					wheel_C:SetAngles( Angle(0,0,0) )
-					
+					wheel_C:SetAngles( ANG_ZERO )
+
 					wheel_C:SetModel( "models/props_vehicles/tire001c_car.mdl" )
 					wheel_C:Spawn()
 					wheel_C:Activate()
-					
+
 					wheel_C:SetNoDraw( true )
 					wheel_C:DrawShadow( false )
 					wheel_C.DoNotDuplicate = true
-					
+
 					local radius = self.WheelRadius
-					
+
 					wheel_C:PhysicsInitSphere( radius, "jeeptire" )
-					wheel_C:SetCollisionBounds( Vector(-radius,-radius,-radius), Vector(radius,radius,radius) )
-					
+					wheel_C:SetCollisionBounds( Vector( -radius, -radius, -radius ), Vector( radius, radius, radius ) )
+
 					local CWpObj = wheel_C:GetPhysicsObject()
 					if not IsValid( CWpObj ) then
 						self:Remove()
-						
 						print("LFS: Failed to initialize landing gear phys model. Plane terminated.")
 						return
 					end
-				
+
 					CWpObj:EnableMotion(false)
 					CWpObj:SetMass( self.WheelMass )
-					
+
 					self.wheel_C = wheel_C
 					self:DeleteOnRemove( wheel_C )
 					self:dOwner( wheel_C )
-					
-					self:dOwner( constraint.AdvBallsocket(wheel_C, SteerMaster,0,0,Vector(0,0,0),Vector(0,0,0),0,0, -180, -0.01, -0.01, 180, 0.01, 0.01, 0, 0, 0, 1, 0) )
-					self:dOwner( constraint.AdvBallsocket(wheel_C,self,0,0,Vector(0,0,0),Vector(0,0,0),0,0, -180, -180, -180, 180, 180, 180, 0, 0, 0, 0, 0) )
+
+					self:dOwner( constraint.AdvBallsocket( wheel_C, SteerMaster, 0, 0, VEC_ZERO, VEC_ZERO, 0, 0, -180, -0.01, -0.01, 180, 0.01, 0.01, 0, 0, 0, 1, 0 ) )
+					self:dOwner( constraint.AdvBallsocket( wheel_C, self, 0, 0, VEC_ZERO, VEC_ZERO, 0, 0, -180, -180, -180, 180, 180, 180, 0, 0, 0, 0, 0 ) )
 					self:dOwner( constraint.NoCollide( wheel_C, self, 0, 0 ) )
-					
+
 					CWpObj:EnableMotion( true )
 					CWpObj:EnableDrag( false ) 
 				end
 			end
 		end
 	end
-	
+
 	local PObj = self:GetPhysicsObject()
-	
+
 	if IsValid( PObj ) then 
 		PObj:EnableMotion( true )
 	end
-	
+
 	self:PhysWake() 
 end
 
@@ -1204,12 +1178,10 @@ function ENT:InitPod( Pos, Ang )
 	if IsValid( self:GetDriverSeat() ) then return end
 
 	local Pod = ents.Create( "prop_vehicle_prisoner_pod" )
-	
+
 	if not IsValid( Pod ) then
 		self:Remove()
-		
-		print("LFS: Failed to create driverseat. Plane terminated.")
-		
+		print( "LFS: Failed to create driverseat. Plane terminated." )
 		return
 	else
 		self:SetDriverSeat( Pod )
@@ -1230,30 +1202,29 @@ function ENT:InitPod( Pos, Ang )
 		Pod:Activate()
 		Pod:SetParent( self )
 		Pod:SetNotSolid( true )
-		--Pod:SetNoDraw( true )
-		Pod:SetColor( Color( 255, 255, 255, 0 ) ) 
+		Pod:SetColor( INITIAL_POD_COLOR ) 
 		Pod:SetRenderMode( RENDERMODE_TRANSALPHA )
 		Pod:DrawShadow( false )
 		Pod.DoNotDuplicate = true
 		Pod:SetNWInt( "pPodIndex", 1 )
-		
+
 		if IsValid( DSPhys ) then
 			DSPhys:EnableDrag( false ) 
 			DSPhys:EnableMotion( false )
 			DSPhys:SetMass( 1 )
 		end
-		
+
 		self:DeleteOnRemove( Pod )
-		
+
 		self:dOwner( Pod )
 	end
 end
 
 function ENT:AddPassengerSeat( Pos, Ang )
 	if not isvector( Pos ) or not isangle( Ang ) then return NULL end
-	
+
 	local Pod = ents.Create( "prop_vehicle_prisoner_pod" )
-	
+
 	if not IsValid( Pod ) then return NULL end
 
 	Pod:SetMoveType( MOVETYPE_NONE )
@@ -1267,31 +1238,30 @@ function ENT:AddPassengerSeat( Pos, Ang )
 	Pod:Activate()
 	Pod:SetParent( self )
 	Pod:SetNotSolid( true )
-	--Pod:SetNoDraw( true )
-	Pod:SetColor( Color( 255, 255, 255, 0 ) ) 
+	Pod:SetColor( INITIAL_POD_COLOR ) 
 	Pod:SetRenderMode( RENDERMODE_TRANSALPHA )
-	
+
 	Pod:DrawShadow( false )
 	Pod.DoNotDuplicate = true
-	
+
 	self.pPodKeyIndex = self.pPodKeyIndex and self.pPodKeyIndex + 1 or 2
-	
+
 	Pod:SetNWInt( "pPodIndex", self.pPodKeyIndex )
-	
+
 	self:DeleteOnRemove( Pod )
 	self:dOwner( Pod )
-	
+
 	local DSPhys = Pod:GetPhysicsObject()
 	if IsValid( DSPhys ) then
 		DSPhys:EnableDrag( false ) 
 		DSPhys:EnableMotion( false )
 		DSPhys:SetMass( 1 )
 	end
-	
+
 	if not istable( self.pSeats ) then self.pSeats = {} end
-	
+
 	table.insert( self.pSeats, Pod )
-	
+
 	return Pod
 end
 
@@ -1301,30 +1271,30 @@ function ENT:ApplyAngForce( angForce )
 	local phys = self:GetPhysicsObject()
 
 	if not IsValid( phys ) then return end
-	
+
 	local up = self:GetUp()
 	local left = self:GetRight() * -1
 	local forward = self:GetForward()
 
-	local pitch = up * (angForce.p * 0.5)
+	local pitch = up * ( angForce.p * 0.5 )
 	phys:ApplyForceOffset( forward, pitch )
 	phys:ApplyForceOffset( forward * -1, pitch * -1 )
 
-	local yaw = forward * (angForce.y * 0.5)
+	local yaw = forward * ( angForce.y * 0.5 )
 	phys:ApplyForceOffset( left, yaw )
 	phys:ApplyForceOffset( left * -1, yaw * -1 )
 
-	local roll = left * (angForce.r * 0.5)
+	local roll = left * ( angForce.r * 0.5 )
 	phys:ApplyForceOffset( up, roll )
 	phys:ApplyForceOffset( up * -1, roll * -1 )
 end
 
 function ENT:GetAngVel()
 	local phys = self:GetPhysicsObject()
-	if not IsValid( phys ) then return Angle(0,0,0) end
-	
+	if not IsValid( phys ) then return ANG_ZERO end
+
 	local vec = phys:GetAngleVelocity()
-	
+
 	return Angle( vec.y, vec.z, vec.x )
 end
 
@@ -1334,12 +1304,12 @@ end
 
 function ENT:dOwner( eEnt )
 	if not IsEntity( eEnt ) or not IsValid( eEnt ) then return end
-	
+
 	if not CPPI then return end
-	
+
 	local Owner = self.dOwnerEntLFS
 	if not IsEntity( Owner ) then return end
-	
+
 	if IsValid( Owner ) then
 		eEnt:CPPISetOwner( Owner )
 	end
@@ -1352,7 +1322,6 @@ end
 
 function ENT:SetNextShieldRecharge( nDelay )
 	if not isnumber( nDelay ) then return end
-	
 	self.NextShieldRecharge = CurTime() + nDelay
 end
 
@@ -1365,7 +1334,7 @@ function ENT:RechargeShield()
 	local Cur = self:GetShield()
 	local Rate = FrameTime() * 30
 
-	self:SetShield( Cur + math.Clamp(MaxShield - Cur,-Rate,Rate) )
+	self:SetShield( Cur + math.Clamp( MaxShield - Cur, -Rate, Rate ) )
 end
 
 function ENT:TakeShieldDamage( Damage )
@@ -1374,6 +1343,12 @@ function ENT:TakeShieldDamage( Damage )
 
 	self:SetShield( New )
 end
+
+local takeDamageSounds = {
+	"physics/metal/metal_sheet_impact_bullet2.wav",
+	"physics/metal/metal_sheet_impact_hard2.wav",
+	"physics/metal/metal_sheet_impact_hard6.wav"
+}
 
 function ENT:OnTakeDamage( dmginfo )
 	self:TakePhysicsDamage( dmginfo )
@@ -1401,7 +1376,7 @@ function ENT:OnTakeDamage( dmginfo )
 
 			self:TakeShieldDamage( Damage )
 		else
-			sound.Play( Sound( table.Random( {"physics/metal/metal_sheet_impact_bullet2.wav","physics/metal/metal_sheet_impact_hard2.wav","physics/metal/metal_sheet_impact_hard6.wav",} ) ), dmgPos, SNDLVL_70dB)
+			sound.Play( Sound( takeDamageSounds[math.random( #takeDamageSounds)] ), dmgPos, SNDLVL_70dB )
 
 			local effectdata = EffectData()
 				effectdata:SetOrigin( dmgPos )
@@ -1431,41 +1406,41 @@ function ENT:OnTakeDamage( dmginfo )
 			end
 		end
 	end
-	
-	if NewHealth <= 0 and not (self:GetShield() > Damage and ShieldCanBlock) then
-		if not self:IsDestroyed() then
-			self.FinalAttacker = dmginfo:GetAttacker() 
-			self.FinalInflictor = dmginfo:GetInflictor()
 
-			local Attacker = self.FinalAttacker
-			if IsValid( Attacker ) and Attacker:IsPlayer() then
-				net.Start( "lfs_killmarker" )
-				net.Send( Attacker )
-			end
+	if NewHealth <= 0 and ( not (self:GetShield() > Damage and ShieldCanBlock) ) and ( not self:IsDestroyed() ) then
+		self.FinalAttacker = dmginfo:GetAttacker() 
+		self.FinalInflictor = dmginfo:GetInflictor()
 
-			self:Destroy()
-			
-			self.MaxPerfVelocity = self.MaxPerfVelocity * 10
-			local ExplodeTime = self:IsSpaceShip() and (math.Clamp((self:GetVelocity():Length() - 250) / 500,1.5,8) * math.Rand(0.2,1)) or (self:GetAI() and 30 or 9999)
-			if self:IsGunship() then ExplodeTime = math.Rand(1,2) end
-
-			local effectdata = EffectData()
-				effectdata:SetOrigin( self:GetPos() )
-			util.Effect( "lfs_explosion_nodebris", effectdata )
-
-			local effectdata = EffectData()
-				effectdata:SetOrigin( self:GetPos() )
-				effectdata:SetStart( self:GetPhysicsObject():GetMassCenter() )
-				effectdata:SetEntity( self )
-				effectdata:SetScale( 1 )
-				effectdata:SetMagnitude( ExplodeTime )
-			util.Effect( "lfs_firetrail", effectdata )
-
-			timer.Simple( ExplodeTime, function()
-				if not IsValid( self ) then return end
-				self:Explode()
-			end)
+		local Attacker = self.FinalAttacker
+		if IsValid( Attacker ) and Attacker:IsPlayer() then
+			net.Start( "lfs_killmarker" )
+			net.Send( Attacker )
 		end
+
+		self:Destroy()
+
+		self.MaxPerfVelocity = self.MaxPerfVelocity * 10
+		local ExplodeTime = self:IsSpaceShip() and ( math.Clamp( ( self:GetVelocity():Length() - 250 ) / 500, 1.5, 8 ) * math.Rand( 0.2, 1 ) ) or ( self:GetAI() and 30 or 9999 )
+		if self:IsGunship() then ExplodeTime = math.Rand( 1, 2 ) end
+
+		local effectdata
+
+		effectdata = EffectData()
+		effectdata:SetOrigin( self:GetPos() )
+		util.Effect( "lfs_explosion_nodebris", effectdata )
+
+		effectdata = EffectData()
+		effectdata:SetOrigin( self:GetPos() )
+		effectdata:SetStart( self:GetPhysicsObject():GetMassCenter() )
+		effectdata:SetEntity( self )
+		effectdata:SetScale( 1 )
+		effectdata:SetMagnitude( ExplodeTime )
+		util.Effect( "lfs_firetrail", effectdata )
+
+		timer.Simple( ExplodeTime, function()
+			if not IsValid( self ) then return end
+			self:Explode()
+		end )
 	end
 
 	if NewHealth <= -self:GetMaxHP() then
@@ -1478,40 +1453,40 @@ function ENT:PrepExplode()
 		self:Explode()
 	end
 	
-	if self:IsDestroyed() then
-		if self:GetVelocity():Length() < 800 then
-			self:Explode()
-		end
+	if self:IsDestroyed() and ( self:GetVelocity():Length() < 800 ) then
+		self:Explode()
 	end
 end
 
 function ENT:Explode()
 	if self.ExplodedAlready then return end
-	
+
 	self.ExplodedAlready = true
-	
+
 	local Driver = self:GetDriver()
 	local Gunner = self:GetGunner()
-	
+
 	if IsValid( Driver ) then
-		Driver:TakeDamage( 1000, self.FinalAttacker or Entity(0), self.FinalInflictor or Entity(0) )
+		Driver:TakeDamage( 1000, self.FinalAttacker or Entity( 0 ), self.FinalInflictor or Entity( 0 ) )
 	end
 	
 	if IsValid( Gunner ) then
-		Gunner:TakeDamage( 1000, self.FinalAttacker or Entity(0), self.FinalInflictor or Entity(0) )
+		Gunner:TakeDamage( 1000, self.FinalAttacker or Entity( 0 ), self.FinalInflictor or Entity( 0 ) )
 	end
-	
+
 	if istable( self.pSeats ) then
+		-- TODO: Can this be ipairs?
 		for _, pSeat in pairs( self.pSeats ) do
 			if IsValid( pSeat ) then
 				local psgr = pSeat:GetDriver()
 				if IsValid( psgr ) then
-					psgr:TakeDamage( 1000, self.FinalAttacker or Entity(0), self.FinalInflictor or Entity(0) )
+					psgr:TakeDamage( 1000, self.FinalAttacker or Entity( 0 ), self.FinalInflictor or Entity( 0 ) )
 				end
 			end
 		end
 	end
-	
+
+	-- TODO: Can we remove the isvalid check here?
 	local ent = ents.Create( "lunasflightschool_destruction" )
 	if IsValid( ent ) then
 		ent:SetPos( self:LocalToWorld( self:OBBCenter() ) )
@@ -1521,7 +1496,7 @@ function ENT:Explode()
 		ent:Spawn()
 		ent:Activate()
 	end
-	
+
 	self:Remove()
 end
 
@@ -1531,7 +1506,7 @@ end
 
 function ENT:Destroy()
 	self.Destroyed = true
-	
+
 	local PObj = self:GetPhysicsObject()
 	if IsValid( PObj ) then
 		PObj:SetDragCoefficient( -20 )
@@ -1542,9 +1517,12 @@ function ENT:PhysicsCollide( data, physobj )
 	if self:IsDestroyed() then
 		self.MarkForDestruction = true
 	end
-	
-	if IsValid( data.HitEntity ) then
-		if data.HitEntity:IsPlayer() or data.HitEntity:IsNPC() or simfphys.LFS.CollisionFilter[ data.HitEntity:GetClass():lower() ] then
+
+	local hitEnt = data.HitEntity
+	if IsValid( hitEnt ) then
+		if hitEnt:IsPlayer() then return end
+		if hitent:IsNPC() then return end
+		if simfphys.LFS.CollisionFilter[hitEnt:GetClass():lower()] then
 			return
 		end
 	end
@@ -1554,8 +1532,7 @@ function ENT:PhysicsCollide( data, physobj )
 
 		if VelDif > 500 then
 			self:EmitSound( "Airboat_impact_hard" )
-
-			self:TakeDamage( VelDif, data.HitEntity, data.HitEntity )
+			self:TakeDamage( VelDif, hitEntity, hitEntity )
 		else
 			self:EmitSound( "MetalVehicle.ImpactSoft" )
 		end
@@ -1578,14 +1555,14 @@ end
 
 function ENT:OnToggleAI( name, old, new)
 	if new == old then return end
-	
+
 	if new == true then
 		local Driver = self:GetDriver()
-		
+
 		if IsValid( Driver ) then
 			Driver:ExitVehicle()
 		end
-		
+
 		self:SetActive( true )
 		self:StartEngine()
 		self.COL_GROUP_OLD = self:GetCollisionGroup()
@@ -1602,16 +1579,19 @@ end
 function ENT:AITargetInfront( ent, range )
 	if not IsValid( ent ) then return false end
 	if not range then range = 45 end
-	
-	local DirToTarget = (ent:GetPos() - self:GetPos()):GetNormalized()
-	
-	local InFront = math.deg( math.acos( math.Clamp( self:GetForward():Dot( DirToTarget ) ,-1,1) ) ) < range
+
+	local DirToTarget = ( ent:GetPos() - self:GetPos() ):GetNormalized()
+
+	local InFront = math.deg( math.acos( math.Clamp( self:GetForward():Dot( DirToTarget ), -1, 1 ) ) ) < range
 	return InFront
 end
 
+-- TODO: Can we simplify or optimize this in any way?
+local canSeeMins = Vector( -10, -10, -10 )
+local canSeeMaxs = Vector( 10, 10, 10 )
 function ENT:CanSee( otherEnt )
 	if not IsValid( otherEnt ) then return false end
-	return util.TraceHull( { start = self:GetRotorPos(), filter = {self,self.wheel_L,self.wheel_R,self.wheel_C}, endpos = otherEnt:GetPos(), mins = Vector( -10, -10, -10 ),maxs = Vector( 10, 10, 10 ) } ).Entity == otherEnt
+	return util.TraceHull( { start = self:GetRotorPos(), filter = { self, self.wheel_L, self.wheel_R, self.wheel_C }, endpos = otherEnt:GetPos(), mins = canSeeMins, maxs = canSeeMaxs } ).Entity == otherEnt
 end
 
 function ENT:AIGetNPCRelationship( npc_class )
@@ -1622,14 +1602,76 @@ function ENT:AIGetNPCTargets()
 	return simfphys.LFS:NPCsGetAll()
 end
 
+function ENT:AICheckPlayerTarget( ply, targetDist )
+	if not IsValid( ply ) then return end
+	if not ply:Alive() then return end
+
+	local MyTeam = self:GetAITEAM()
+	local Dist = ( ply:GetPos() - self:GetPos() ):Length()
+
+	if Dist >= targetDist then return end
+
+	local Plane = ply:lfsGetPlane()
+
+	if IsValid( Plane ) then
+		if self:CanSee( Plane ) and not Plane:IsDestroyed() and Plane ~= self then
+			local TheirTeam = Plane:GetAITEAM()
+			if TheirTeam ~= 0 and TheirTeam ~= MyTeam or TheirTeam == 3 then
+				return Dist
+			end
+		end
+	else
+		local TheirTeam = ply:lfsGetAITeam()
+		if ply:IsLineOfSightClear( self ) and TheirTeam ~= 0 and ( TheirTeam ~= MyTeam or TheirTeam == 3 ) then
+			return Dist
+		end
+	end
+end
+
+function ENT:AICheckAITarget( ai, targetDist )
+	if not IsValid( ai ) then return end
+
+	-- TODO!: Verify this logic flow
+	local TheirTeam = self:AIGetNPCRelationship( ai:GetClass() )
+	if TheirTeam == "0" then return end
+	if TheirTeam == self:GetAITEAM() then return end
+
+	local Dist = ( ai:GetPos() - self:GetPos() ):Length()
+	if Dist >= targetDist then return end
+
+	if not self:CanSee( ai ) then return end
+
+	return Dist
+end
+
+function ENT:AICheckFoundPlane( plane, targetDist )
+	if not IsValid( plane ) then return end
+	if plane == self then return end
+
+	local Dist = ( plane:GetPos() - self:GetPos() ):Length()
+	if Dist >= targetDist then return end
+
+	if not self:AITargetInfront( plane, 100 ) then return end
+	if plane:IsDestroyed() then return end
+	if not plane.GetAITEAM then return end
+
+	local TheirTeam = plane:GetAITEAM()
+	if TheirTeam == 0 then return end
+
+	if ( TheirTeam == self:GetAITEAM() ) and TheirTeam ~= 3 then return end
+
+	if not self:CanSee( plane ) then return end
+
+	return Dist
+end
+
+-- TODO: Verify the extracted helper functions perform like they should
 function ENT:AIGetTarget()
 	self.NextAICheck = self.NextAICheck or 0
-	
+
 	if self.NextAICheck > CurTime() then return self.LastTarget end
-	
 	self.NextAICheck = CurTime() + 2
-	
-	local MyPos = self:GetPos()
+
 	local MyTeam = self:GetAITEAM()
 
 	if MyTeam == 0 then self.LastTarget = NULL return NULL end
@@ -1640,131 +1682,105 @@ function ENT:AIGetTarget()
 	local TargetDistance = 60000
 
 	if not simfphys.LFS.IgnorePlayers then
-		for _, v in pairs( players ) do
-			if IsValid( v ) then
-				if v:Alive() then
-					local Dist = (v:GetPos() - MyPos):Length()
-					if Dist < TargetDistance then
-						local Plane = v:lfsGetPlane()
-						
-						if IsValid( Plane ) then
-							if self:CanSee( Plane ) and not Plane:IsDestroyed() and Plane ~= self then
-								local HisTeam = Plane:GetAITEAM()
-								if HisTeam ~= 0 then
-									if HisTeam ~= MyTeam or HisTeam == 3 then
-										ClosestTarget = v
-										TargetDistance = Dist
-									end
-								end
-							end
-						else
-							local HisTeam = v:lfsGetAITeam()
-							if v:IsLineOfSightClear( self ) then
-								if HisTeam ~= 0 then
-									if HisTeam ~= MyTeam or HisTeam == 3 then
-										ClosestTarget = v
-										TargetDistance = Dist
-									end
-								end
-							end
-						end
-					end
-				end
+		for _, v in ipairs( players ) do
+			local dist = self:AICheckPlayerTarget( v, TargetDistance )
+			if dist and dist < TargetDistance then
+				ClosestTarget = v
+				TargetDistance = dist
 			end
 		end
 	end
 
 	if not simfphys.LFS.IgnoreNPCs then
+		-- TODO: Can this be ipairs?
 		for _, v in pairs( self:AIGetNPCTargets() ) do
-			if IsValid( v ) then
-				local HisTeam = self:AIGetNPCRelationship( v:GetClass() )
-				if HisTeam ~= "0" then
-					if HisTeam ~= MyTeam or HisTeam == 3 then
-						local Dist = (v:GetPos() - MyPos):Length()
-						if Dist < TargetDistance then
-							if self:CanSee( v ) then
-								ClosestTarget = v
-								TargetDistance = Dist
-							end
-						end
-					end
-				end
+			local dist = self:AICheckAITarget( v, TargetDistance )
+			if dist and dist < TargetDistance then
+				ClosestTarget = v
+				TargetDistance = dist
 			end
 		end
 	end
 
 	self.FoundPlanes = simfphys.LFS:PlanesGetAll()
-	
+
+	-- TODO: Can this be ipairs?
 	for _, v in pairs( self.FoundPlanes ) do
-		if not IsValid( v ) and v == self then continue end
-
-		local Dist = (v:GetPos() - MyPos):Length()
-
-		if Dist < TargetDistance and self:AITargetInfront( v, 100 ) then
-			if not v:IsDestroyed() and v.GetAITEAM then
-				local HisTeam = v:GetAITEAM()
-				if HisTeam ~= 0 then
-					if HisTeam ~= self:GetAITEAM() or HisTeam == 3 then
-						if self:CanSee( v ) then
-							ClosestTarget = v
-							TargetDistance = Dist
-						end
-					end
-				end
-			end
+		local dist = self:AICheckFoundPlane( v, TargetDistance )
+		if dist and dist < TargetDistance then
+			ClosestTarget = v
+			TargetDistance = dist
 		end
 	end
 
 	self.LastTarget = ClosestTarget
-	
+
 	return ClosestTarget
 end
 
+local aiTraceAngles = {
+	Angle( 0, 20, 0 ),
+	Angle( 0, -20, 0 ),
+	Angle( 25, 65, 0 ),
+	Angle( 25, -65, 0 ),
+	Angle( -25, 65, 0 ),
+	Angle( -25, -65, 0 ),
+	Angle( -20, 0, 0 ),
+	Angle( 20, 0, 0 ),
+}
+
+-- TODO: Do this the same way as we did in the other file, or decide a better way
+function ENT:AIAdjustAvoid( avoid )
+	if not istable( self.FoundPlanes ) then return end
+
+	local myRadius = self:BoundingRadius() 
+	local myPos = self:GetPos()
+	local myDir = self:GetForward()
+
+	-- TODO: Can this be ipairs
+	for _, v in pairs( self.FoundPlanes ) do
+		if IsValid( v ) and v ~= self and v.LFS then
+			local theirRadius = v:BoundingRadius() 
+			local Sub = myPos - v:GetPos()
+			local Dir = Sub:GetNormalized()
+			local Dist = Sub:Length()
+
+			if Dist < ( theirRadius + myRadius + 200 ) and ( math.deg( math.acos( math.Clamp( myDir:Dot( -Dir ), -1, 1 ) ) ) < 90 ) then
+				avoid = avoid + Dir * ( theirRadius + myRadius + 500 )
+			end
+		end
+	end
+end
+
+-- TODO: Optimize this
+-- TODO: Can this be deduped with other similar functions?
 function ENT:RunAI()
 	local RangerLength = 15000
 	local mySpeed = self:GetVelocity():Length()
 	local MinDist = 600 + mySpeed * 2
 	local StartPos = self:GetPos()
 
-	local TraceFilter = {self,self.wheel_L,self.wheel_R,self.wheel_C}
+	local TraceFilter = { self, self.wheel_L, self.wheel_R, self.wheel_C }
 
-	local FrontLeft = util.TraceLine( { start = StartPos, filter = TraceFilter, endpos = StartPos + self:LocalToWorldAngles( Angle(0,20,0) ):Forward() * RangerLength } )
-	local FrontRight = util.TraceLine( { start = StartPos, filter = TraceFilter, endpos = StartPos + self:LocalToWorldAngles( Angle(0,-20,0) ):Forward() * RangerLength } )
+	local FrontLeft = util.TraceLine( { start = StartPos, filter = TraceFilter, endpos = StartPos + self:LocalToWorldAngles( aiTraceAngles[1] ):Forward() * RangerLength } )
+	local FrontRight = util.TraceLine( { start = StartPos, filter = TraceFilter, endpos = StartPos + self:LocalToWorldAngles( aiTraceAngles[2] ):Forward() * RangerLength } )
 
-	local FrontLeft2 = util.TraceLine( { start = StartPos, filter = TraceFilter, endpos = StartPos + self:LocalToWorldAngles( Angle(25,65,0) ):Forward() * RangerLength } )
-	local FrontRight2 = util.TraceLine( { start = StartPos, filter = TraceFilter, endpos = StartPos + self:LocalToWorldAngles( Angle(25,-65,0) ):Forward() * RangerLength } )
+	local FrontLeft2 = util.TraceLine( { start = StartPos, filter = TraceFilter, endpos = StartPos + self:LocalToWorldAngles( aiTraceAngles[3] ):Forward() * RangerLength } )
+	local FrontRight2 = util.TraceLine( { start = StartPos, filter = TraceFilter, endpos = StartPos + self:LocalToWorldAngles( aiTraceAngles[4] ):Forward() * RangerLength } )
 
-	local FrontLeft3 = util.TraceLine( { start = StartPos, filter = TraceFilter, endpos = StartPos + self:LocalToWorldAngles( Angle(-25,65,0) ):Forward() * RangerLength } )
-	local FrontRight3 = util.TraceLine( { start = StartPos, filter = TraceFilter, endpos = StartPos + self:LocalToWorldAngles( Angle(-25,-65,0) ):Forward() * RangerLength } )
+	local FrontLeft3 = util.TraceLine( { start = StartPos, filter = TraceFilter, endpos = StartPos + self:LocalToWorldAngles( aiTraceAngles[5] ):Forward() * RangerLength } )
+	local FrontRight3 = util.TraceLine( { start = StartPos, filter = TraceFilter, endpos = StartPos + self:LocalToWorldAngles( aiTraceAngles[6] ):Forward() * RangerLength } )
 
-	local FrontUp = util.TraceLine( { start = StartPos, filter = TraceFilter, endpos = StartPos + self:LocalToWorldAngles( Angle(-20,0,0) ):Forward() * RangerLength } )
-	local FrontDown = util.TraceLine( { start = StartPos, filter = TraceFilter, endpos = StartPos + self:LocalToWorldAngles( Angle(20,0,0) ):Forward() * RangerLength } )
+	local FrontUp = util.TraceLine( { start = StartPos, filter = TraceFilter, endpos = StartPos + self:LocalToWorldAngles( aiTraceAngles[7] ):Forward() * RangerLength } )
+	local FrontDown = util.TraceLine( { start = StartPos, filter = TraceFilter, endpos = StartPos + self:LocalToWorldAngles( aiTraceAngles[8] ):Forward() * RangerLength } )
 
 	local Up = util.TraceLine( { start = StartPos, filter = TraceFilter, endpos = StartPos + self:GetUp() * RangerLength } )
 	local Down = util.TraceLine( { start = StartPos, filter = TraceFilter, endpos = StartPos - self:GetUp() * RangerLength } )
 
-	local Down2 = util.TraceLine( { start = self:LocalToWorld( Vector(0,0,100) ), filter = TraceFilter, endpos = StartPos + Vector(0,0,-RangerLength) } )
+	local Down2 = util.TraceLine( { start = self:LocalToWorld( VEC_UP_100 ), filter = TraceFilter, endpos = StartPos + Vector( 0, 0, -RangerLength ) } )
 
-	local cAvoid = Vector(0,0,0)
-	if istable( self.FoundPlanes ) then
-		local myRadius = self:BoundingRadius() 
-		local myPos = self:GetPos()
-		local myDir = self:GetForward()
-		for _, v in pairs( self.FoundPlanes ) do
-			if IsValid( v ) and v ~= self and v.LFS then
-				local theirRadius = v:BoundingRadius() 
-				local Sub = (myPos - v:GetPos())
-				local Dir = Sub:GetNormalized()
-				local Dist = Sub:Length()
-				
-				if Dist < (theirRadius + myRadius + 200) then
-					if math.deg( math.acos( math.Clamp( myDir:Dot( -Dir ) ,-1,1) ) ) < 90 then
-						cAvoid = cAvoid + Dir * (theirRadius + myRadius + 500)
-					end
-				end
-			end
-		end
-	end
+	local cAvoid = VEC_ZERO
+	self:AIAdjustAvoid( cAvoid )
 
 	local FLp = FrontLeft.HitPos + FrontLeft.HitNormal * MinDist + cAvoid * 8
 	local FRp = FrontRight.HitPos + FrontRight.HitNormal * MinDist + cAvoid * 8
@@ -1778,30 +1794,28 @@ function ENT:RunAI()
 	local FUp = FrontUp.HitPos + FrontUp.HitNormal * MinDist
 	local FDp = FrontDown.HitPos + FrontDown.HitNormal * MinDist
 
-	local Up = Up.HitPos + Up.HitNormal * MinDist
+	Up = Up.HitPos + Up.HitNormal * MinDist
 	local Dp = Down.HitPos + Down.HitNormal * MinDist
 
-	local TargetPos = (FLp+FRp+FL2p+FR2p+FL3p+FR3p+FUp+FDp+Up+Dp) / 10
-
-	local alt = (self:GetPos() - Down2.HitPos):Length()
+	local TargetPos = ( FLp + FRp + FL2p + FR2p + FL3p + FR3p + FUp + FDp + Up + Dp ) / 10
+	local alt = ( self:GetPos() - Down2.HitPos ):Length()
 
 	if alt < MinDist then 
 		self.TargetRPM = self:GetMaxRPM()
-		
+
 		if self:GetStability() < 0.4 then
 			self.TargetRPM = self:GetLimitRPM()
 			TargetPos.z = self:GetPos().z + 2000
 		end
-		
+
 		if self.LandingGearUp and mySpeed < 100 and not self:IsPlayerHolding() then
 			local pObj = self:GetPhysicsObject()
-			if IsValid( pObj ) then
-				if pObj:IsMotionEnabled() then
-					self:Explode()
-				end
+			if IsValid( pObj ) and pObj:IsMotionEnabled() then
+				self:Explode()
 			end
 		end
 	else
+		-- TODO: Extract this out and simplify it
 		if self:GetStability() < 0.3 then
 			self.TargetRPM = self:GetLimitRPM()
 			TargetPos.z = self:GetPos().z + 600
@@ -1810,29 +1824,27 @@ function ENT:RunAI()
 				local Target = self:AIGetTarget()
 				if IsValid( Target ) then
 					if self:AITargetInfront( Target, 65 ) then
-						TargetPos = Target:GetPos() + cAvoid * 8 + Target:GetVelocity() * math.abs(math.cos( CurTime() * 150 ) ) * 3
-						
-						local Throttle = (self:GetPos() - TargetPos):Length() / 8000 * self:GetMaxRPM()
-						self.TargetRPM = math.Clamp( Throttle,self:GetIdleRPM(),self:GetMaxRPM())
-						
+						TargetPos = Target:GetPos() + cAvoid * 8 + Target:GetVelocity() * math.abs( math.cos( CurTime() * 150 ) ) * 3
+
+						local Throttle = ( self:GetPos() - TargetPos ):Length() / 8000 * self:GetMaxRPM()
+						self.TargetRPM = math.Clamp( Throttle, self:GetIdleRPM(), self:GetMaxRPM() )
+
 						local startpos =  self:GetRotorPos()
 						local tr = util.TraceHull( {
 							start = startpos,
-							endpos = (startpos + self:GetForward() * 50000),
+							endpos = startpos + self:GetForward() * 50000,
 							mins = Vector( -30, -30, -30 ),
 							maxs = Vector( 30, 30, 30 ),
 							filter = TraceFilter
 						} )
-					
-						local CanShoot = (IsValid( tr.Entity ) and tr.Entity.LFS and tr.Entity.GetAITEAM) and (tr.Entity:GetAITEAM() ~= self:GetAITEAM() or tr.Entity:GetAITEAM() == 0) or true
-					
-						if CanShoot then
-							if self:AITargetInfront( Target, 15 ) then
-								self:HandleWeapons( true )
-								
-								if self:AITargetInfront( Target, 10 ) then
-									self:HandleWeapons( true, true )
-								end
+
+						local CanShoot = ( IsValid( tr.Entity ) and tr.Entity.LFS and tr.Entity.GetAITEAM) and ( tr.Entity:GetAITEAM() ~= self:GetAITEAM() or tr.Entity:GetAITEAM() == 0 ) or true
+
+						if CanShoot and self:AITargetInfront( Target, 15 ) then
+							self:HandleWeapons( true )
+							
+							if self:AITargetInfront( Target, 10 ) then
+								self:HandleWeapons( true, true )
 							end
 						end
 					else
@@ -1859,22 +1871,20 @@ function ENT:RunAI()
 		self.TargetRPM = 0
 	end
 
-	self.smTargetPos = self.smTargetPos and self.smTargetPos + (TargetPos - self.smTargetPos) * FrameTime() or self:GetPos()
+	self.smTargetPos = self.smTargetPos and self.smTargetPos + ( TargetPos - self.smTargetPos ) * FrameTime() or self:GetPos()
 
-	local TargetAng = (self.smTargetPos - self:GetPos()):GetNormalized():Angle()
-
-	return TargetAng
+	return( self.smTargetPos - self:GetPos() ):GetNormalized():Angle()
 end
 
 function ENT:PlayAnimation( animation, playbackrate )
 	playbackrate = playbackrate or 1
-	
+
 	local anims = string.Implode( ",", self:GetSequenceList() )
-	
-	if not animation or not string.match( string.lower(anims), string.lower( animation ), 1 ) then return end
-	
+
+	if not animation or not string.match( string.lower( anims ), string.lower( animation ), 1 ) then return end
+
 	local sequence = self:LookupSequence( animation )
-	
+
 	self:ResetSequence( sequence )
 	self:SetPlaybackRate( playbackrate )
 	self:SetSequence( sequence )

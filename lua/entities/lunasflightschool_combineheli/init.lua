@@ -16,6 +16,9 @@ function ENT:SpawnFunction( ply, tr, ClassName )
 	return ent
 end
 
+local traceMaxs = Vector( 40, 40, 40 )
+local traceMins = Vector( -40, -40, -40 )
+
 function ENT:OnTick()
 	local ID = self:LookupAttachment( "muzzle" )
 	local Attachment = self:GetAttachment( ID )
@@ -49,9 +52,9 @@ function ENT:OnTick()
 	local startpos =  self:GetRotorPos()
 	local tr = util.TraceHull( {
 		start = startpos,
-		endpos = (startpos + Pod:WorldToLocalAngles( Driver:EyeAngles() ):Forward() * 50000),
-		mins = Vector( -40, -40, -40 ),
-		maxs = Vector( 40, 40, 40 ),
+		endpos = startpos + Pod:WorldToLocalAngles( Driver:EyeAngles() ):Forward() * 50000,
+		mins = traceMins,
+		maxs = tracecMaxs,
 		filter = self
 	} )
 
@@ -60,16 +63,23 @@ function ENT:OnTick()
 	Angles:Normalize()
 	
 	local Rate = 3
-	self.sm_pp_yaw = self.sm_pp_yaw and (self.sm_pp_yaw + math.Clamp(Angles.y - self.sm_pp_yaw,-Rate,Rate) ) or 0
-	self.sm_pp_pitch = self.sm_pp_pitch and ( self.sm_pp_pitch + math.Clamp(Angles.p - self.sm_pp_pitch,-Rate,Rate) ) or 0
+	self.sm_pp_yaw = self.sm_pp_yaw and ( self.sm_pp_yaw + math.Clamp( Angles.y - self.sm_pp_yaw, -Rate, Rate ) ) or 0
+	self.sm_pp_pitch = self.sm_pp_pitch and ( self.sm_pp_pitch + math.Clamp( Angles.p - self.sm_pp_pitch, -Rate, Rate ) ) or 0
 	
-	self:SetPoseParameter("weapon_yaw", self.sm_pp_yaw )
-	self:SetPoseParameter("weapon_pitch", -self.sm_pp_pitch )
+	self:SetPoseParameter( "weapon_yaw", self.sm_pp_yaw )
+	self:SetPoseParameter( "weapon_pitch", -self.sm_pp_pitch )
 end
 
 function ENT:RunOnSpawn()
 end
 
+local energySounds = {
+	"weapons/airboat/airboat_gun_energy1.wav",
+	"weapons/airboat/airboat_gun_energy2.wav",
+}
+
+local bullet = {}
+local bulletSpread = Vector( 0.04, 0.04, 0 )
 function ENT:PrimaryAttack()
 	if not self:CanPrimaryAttack() then return end
 
@@ -78,27 +88,26 @@ function ENT:PrimaryAttack()
 	self.charge = self.charge - 0.75
 	
 	if self.charge <= 0 then
-		self:EmitSound("weapons/airboat/airboat_gun_energy"..math.random(1,2)..".wav")
+		self:EmitSound( energySounds[math.random( #energySounds )] )
 	end
 	
 	if not isvector( self.StartPos ) or not isangle( self.AimDir ) or not isnumber( self.MuzzleID ) then return end
 
-	local bullet = {}
-		bullet.Num 			= 1
-		bullet.Src 			= self.StartPos
-		bullet.Dir 			= self.AimDir:Forward()
-		bullet.Spread 		= Vector(0.04,0.04,0)
-		bullet.Tracer		= 2
-		bullet.TracerName 	= "lfs_combine_tracer"
-		bullet.Force		= 12
-		bullet.Damage		= 12
-		bullet.HullSize		= 30
-		bullet.IgnoreEntity 	= self
-		bullet.DisableOverride = true
-		bullet.Callback = function(att, tr, dmginfo)
-			dmginfo:SetDamageType(DMG_AIRBOAT)
-		end
-		bullet.Attacker 	= self:GetDriver()
+	bullet.Num 			= 1
+	bullet.Src 			= self.StartPos
+	bullet.Dir 			= self.AimDir:Forward()
+	bullet.Spread 		= bulletSpread
+	bullet.Tracer		= 2
+	bullet.TracerName 	= "lfs_combine_tracer"
+	bullet.Force		= 12
+	bullet.Damage		= 12
+	bullet.HullSize		= 30
+	bullet.IgnoreEntity 	= self
+	bullet.DisableOverride = true
+	bullet.Callback = function(att, tr, dmginfo)
+		dmginfo:SetDamageType(DMG_AIRBOAT)
+	end
+	bullet.Attacker 	= self:GetDriver()
 	self:FireBullets( bullet )
 	
 	self:SetAmmoPrimary( math.max( self.charge, 0 ) )
@@ -114,16 +123,16 @@ function ENT:SecondaryAttack()
 	local startpos =  self:GetRotorPos()
 	local tr = util.TraceHull( {
 		start = startpos,
-		endpos = (startpos + self:GetForward() * 50000),
-		mins = Vector( -40, -40, -40 ),
-		maxs = Vector( 40, 40, 40 ),
+		endpos = startpos + self:GetForward() * 50000,
+		mins = traceMins,
+		maxs = traceMaxs,
 		filter = self
 	} )
 
 	self.FireLeft = not self.FireLeft
 	
 	local ent = ents.Create( "lunasflightschool_missile" )
-	local Pos = self:LocalToWorld( Vector(17.36,50.89 * (self.FireLeft and 1 or -1),-59.39) )
+	local Pos = self:LocalToWorld( Vector( 17.36, 50.89 * ( self.FireLeft and 1 or -1 ), -59.39 ) )
 	ent:SetPos( Pos )
 	ent:SetAngles( (tr.HitPos - Pos):Angle() )
 	ent:Spawn()
@@ -134,11 +143,9 @@ function ENT:SecondaryAttack()
 	
 	if tr.Hit then
 		local Target = tr.Entity
-		if IsValid( Target ) then
-			if Target:GetClass():lower() ~= "lunasflightschool_missile" then
-				ent:SetLockOn( Target )
-				ent:SetStartVelocity( 0 )
-			end
+		if IsValid( Target ) and Target:GetClass():lower() ~= "lunasflightschool_missile" then
+			ent:SetLockOn( Target )
+			ent:SetStartVelocity( 0 )
 		end
 	end
 	
@@ -159,11 +166,11 @@ end
 function ENT:OnEngineStopped()
 end
 
-function ENT:HandleWeapons(Fire1, Fire2)
+function ENT:HandleWeapons( Fire1, Fire2 )
 	local Driver = self:GetDriver()
 	
-	local Fire1 = false
-	local Fire2 = false
+	Fire1 = false
+	Fire2 = false
 	
 	if IsValid( Driver ) then
 		Fire1 = Driver:KeyDown( IN_ATTACK )
@@ -175,43 +182,39 @@ function ENT:HandleWeapons(Fire1, Fire2)
 		if self:GetAI() then
 			local Target = self:AIGetTarget()
 			
-			if IsValid( Target ) then
-				if self:AITargetInfront( Target, 65 ) then
-					Fire1 = math.cos( CurTime() * 0.8 + self:EntIndex() * 1337 ) > -0.5 -- fire in bursts
-				end
+			if IsValid( Target ) and self:AITargetInfront( Target, 65 ) then
+				Fire1 = math.cos( CurTime() * 0.8 + self:EntIndex() * 1337 ) > -0.5 -- fire in bursts
 			end
 		end
 	end
 
 	self.charge = self.charge or 0
 	if self.charging then
-		self.charge = math.min(self.charge + FrameTime() * 60,self:GetMaxAmmoPrimary())
+		self.charge = math.min( self.charge + FrameTime() * 60, self:GetMaxAmmoPrimary() )
 		self:SetAmmoPrimary( math.max( self.charge, 0 ) )
 		
 		if self.charge >= self:GetMaxAmmoPrimary() or not Fire1 then
 			self.charging = false
-			
+
 			if self.snd_chrg then
 				self.snd_chrg:Stop()
 				self.snd_chrg = nil
 			end
 		end
 	end
-	
+
 	if Fire1 ~= self.OldKeyAttack then
 		self.OldKeyAttack = Fire1
-		if Fire1 then
-			if not self.charging then
-				self.snd_chrg = CreateSound( self, "NPC_AttackHelicopter.ChargeGun" )
-				self.snd_chrg:Play()
-				
-				self.charging = true
-			end
+		if Fire1 and ( not self.charging ) then
+			self.snd_chrg = CreateSound( self, "NPC_AttackHelicopter.ChargeGun" )
+			self.snd_chrg:Play()
+
+			self.charging = true
 		end
 	end
-	
+
 	local fire = Fire1 and self.charge > 0 and not self.charging
-	
+
 	if fire then
 		self:PrimaryAttack()
 	else
@@ -224,7 +227,7 @@ function ENT:HandleWeapons(Fire1, Fire2)
 	if Fire2 then
 		self:SecondaryAttack()
 	end
-	
+
 	self.OldFire = self.OldFire or false
 	if self.OldFire ~= fire then
 		self.OldFire = fire
@@ -235,9 +238,9 @@ function ENT:HandleWeapons(Fire1, Fire2)
 				if vehicle.wpn then
 					vehicle.wpn:Stop()
 				end
-			end)
+			end )
 		else
-			self:EmitSound("weapons/airboat/airboat_gun_energy"..math.random(1,2)..".wav")
+			self:EmitSound( energySounds[math.random( #energySounds )] )
 			if self.wpn then
 				self.wpn:Stop()
 				self.wpn = nil
@@ -247,34 +250,10 @@ function ENT:HandleWeapons(Fire1, Fire2)
 end
 
 function ENT:OnEngineStartInitialized()
-	self:EmitSound( "lfs/heli_start_generic.ogg")
+	self:EmitSound( "lfs/heli_start_generic.ogg" )
 end
 
---[[
-function ENT:OnEngineStopInitialized()
-end
-
-function ENT:OnRotorDestroyed()
-	self:EmitSound( "physics/metal/metal_box_break2.wav" )
-	
-	self:SetHP(1)
-	
-	timer.Simple(2, function()
-		if not IsValid( self ) then return end
-		self:Destroy()
-	end)
-end
-
-function ENT:OnRotorCollide( Pos, Dir )
-	local effectdata = EffectData()
-		effectdata:SetOrigin( Pos )
-		effectdata:SetNormal( Dir )
-	util.Effect( "manhacksparks", effectdata, true, true )
-
-	self:EmitSound( "ambient/materials/roust_crash"..math.random(1,2)..".wav" )
-end
-]]
-
+local missileOffset = Vector( -60, 0, 0 )
 function ENT:GetMissileOffset()
-	return Vector(-60,0,0)
+	return missileOffset
 end

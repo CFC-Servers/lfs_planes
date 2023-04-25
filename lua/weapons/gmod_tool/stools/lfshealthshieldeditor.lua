@@ -7,6 +7,8 @@ TOOL.ConfigName		= ""
 TOOL.ClientConVar[ "maxshield" ] = 0
 TOOL.ClientConVar[ "maxhealth" ] = 5000
 
+local IsValid = IsValid
+
 if CLIENT then
 	language.Add( "tool.lfshealthshieldeditor.name", "Max Health & Shield Editor" )
 	language.Add( "tool.lfshealthshieldeditor.desc", "A tool used to edit Max Health & Shield on LFS-Vehicles" )
@@ -34,7 +36,8 @@ end
 function TOOL:RightClick( trace )
 	local ent = trace.Entity
 
-	if not IsValid( ent ) or not ent.LFS then return false end
+	if not IsValid( ent ) then return false end
+	if not ent.LFS then return false end
 
 	if not ent.OGMaxShield then
 		ent.OGMaxShield = ent.MaxShield
@@ -72,11 +75,12 @@ function TOOL:Think()
 	local tr = ply:GetEyeTrace()
 
 	local ent = tr.Entity
-	if not IsValid( ent ) or not ent.LFS then return end
+	if not IsValid( ent ) then return end
+	if not ent.LFS then return end
 
-	local Text = "Health: "..tostring( math.Round( ent:GetHP(), 0 ) ).."/"..tostring( ent.MaxHealth )
+	local Text = "Health: " .. tostring( math.Round( ent:GetHP(), 0 ) ) .. "/" .. tostring( ent.MaxHealth )
 	if ent:GetShield() > 0 then
-		Text = Text.."\nShield: "..tostring( math.Round( ent:GetShield(), 0 ) ).."/"..tostring( ent.MaxShield )
+		Text = Text .. "\nShield: " .. tostring( math.Round( ent:GetShield(), 0 ) ) .. "/" .. tostring( ent.MaxShield )
 	end
 
 	AddWorldTip( ent:EntIndex(), Text, SysTime() + 0.05, ent:GetPos(), ent )
