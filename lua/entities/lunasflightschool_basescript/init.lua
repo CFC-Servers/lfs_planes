@@ -741,6 +741,7 @@ function ENT:ToggleEngine()
 	end
 end
 
+local checkMousePosCvar = CreateConVar( "lfs_enginestart_mousepos", "0", { FCVAR_ARCHIVE }, "Check if mouse is in the center of the screen when starting the engine." )
 function ENT:IsEngineStartAllowed()
 	if hook.Run( "LFS.IsEngineStartAllowed", self ) == false then return false end
 
@@ -748,6 +749,8 @@ function ENT:IsEngineStartAllowed()
 	local Pod = self:GetDriverSeat()
 
 	if self:GetAI() or not IsValid( Driver ) or not IsValid( Pod ) then return true end
+
+	if not checkMousePosCvar:GetBool() then return true end
 
 	local EyeAngles = Pod:WorldToLocalAngles( Driver:EyeAngles() )
 	local AimDirToForwardDir = math.deg( math.acos( math.Clamp( self:GetForward():Dot( EyeAngles:Forward() ) ,-1,1) ) )
