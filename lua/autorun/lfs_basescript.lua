@@ -448,7 +448,9 @@ if SERVER then
                 if IsValid( vehicle ) then
                     if ply.LFS_HIPSTER then
                         if LFS_BIND[ button ] == "EXIT" then
-                            ply:ExitVehicle()
+                            timer.Simple( 0, function()
+                                ply:ExitVehicle()
+                            end )
                         end
                     end
                 end
