@@ -3,25 +3,6 @@
 EFFECT.Mat = Material( "effects/spark" )
 EFFECT.Mat2 = Material( "sprites/light_glow02_add" )
 
-local Materials = {
-	"particle/smokesprites_0001",
-	"particle/smokesprites_0002",
-	"particle/smokesprites_0003",
-	"particle/smokesprites_0004",
-	"particle/smokesprites_0005",
-	"particle/smokesprites_0006",
-	"particle/smokesprites_0007",
-	"particle/smokesprites_0008",
-	"particle/smokesprites_0009",
-	"particle/smokesprites_0010",
-	"particle/smokesprites_0011",
-	"particle/smokesprites_0012",
-	"particle/smokesprites_0013",
-	"particle/smokesprites_0014",
-	"particle/smokesprites_0015",
-	"particle/smokesprites_0016"
-}
-
 function EFFECT:Init( data )
 
 	self.StartPos = data:GetStart()
