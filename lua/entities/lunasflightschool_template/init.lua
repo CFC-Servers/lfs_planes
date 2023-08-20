@@ -44,7 +44,7 @@ function ENT:PrimaryAttack()
 
 	self:SetNextPrimary( 0.15 )
 
-	--[[ do primary attack code here ]]--
+	-- do primary attack code here
 
 	self:EmitSound( "Weapon_SMG1.NPC_Single" )
 
@@ -73,7 +73,7 @@ function ENT:SecondaryAttack()
 
 	self:SetNextSecondary( 0.15 )
 
-	--[[ do secondary attack code here ]]--
+	--[[do secondary attack code here]]--
 
 	self:TakeSecondaryAmmo()
 end
@@ -118,26 +118,26 @@ end
 ]]--
 
 function ENT:OnEngineStarted()
-	--[[ play engine start sound? ]]--
+	--[[play engine start sound?]]--
 	self:EmitSound( "vehicles/airboat/fan_motor_start1.wav" )
 end
 
 function ENT:OnEngineStopped()
-	--[[ play engine stop sound? ]]--
+	--[[play engine stop sound?]]--
 	self:EmitSound( "vehicles/airboat/fan_motor_shut_off1.wav" )
 end
 
 function ENT:OnVtolMode( IsOn )
-	--[[ called when vtol mode is activated / deactivated ]]--
+	--[[called when vtol mode is activated / deactivated]]--
 end
 
 function ENT:OnLandingGearToggled( bOn )
 	self:EmitSound( "vehicles/tank_readyfire1.wav" )
 
 	if bOn then
-		--[[ set bodygroup of landing gear down? ]]--
+		--[[set bodygroup of landing gear down?]]--
 	else
-		--[[ set bodygroup of landing gear up? ]]--
+		--[[set bodygroup of landing gear up?]]--
 	end
 end
 

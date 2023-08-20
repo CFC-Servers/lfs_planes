@@ -4,8 +4,8 @@ TOOL.Name	 = "#tool.lfshealthshieldeditor.name"
 TOOL.Command = nil
 TOOL.ConfigName = ""
 
-TOOL.ClientConVar[ "maxshield" ] = 0
-TOOL.ClientConVar[ "maxhealth" ] = 5000
+TOOL.ClientConVar["maxshield"] = 0
+TOOL.ClientConVar["maxhealth"] = 5000
 
 if CLIENT then
 	language.Add( "tool.lfshealthshieldeditor.name", "Max Health & Shield Editor" )

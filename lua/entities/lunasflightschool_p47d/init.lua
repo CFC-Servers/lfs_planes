@@ -54,7 +54,7 @@ function ENT:SecondaryAttack()
 	self:TakeSecondaryAmmo()
 
 	if istable( self.MissileEnts ) then
-		local Missile = self.MissileEnts[ self:GetAmmoSecondary() + 1 ]
+		local Missile = self.MissileEnts[self:GetAmmoSecondary() + 1]
 		Missile:EmitSound( "npc/waste_scanner/grenade_fire.wav" )
 		if IsValid( Missile ) then
 			local ent = ents.Create( "lunasflightschool_missile" )

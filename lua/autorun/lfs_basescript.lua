@@ -385,7 +385,7 @@ if SERVER then
         }
 
         if self:lfsGetAITeam() ~= nTeam then
-            self:PrintMessage( HUD_PRINTTALK, "[LFS] Your AI-Team has been updated to: "..TeamText[ nTeam ] )
+            self:PrintMessage( HUD_PRINTTALK, "[LFS] Your AI-Team has been updated to: "..TeamText[nTeam] )
         end
 
         self:SetNWInt( "lfsAITeam", nTeam )
@@ -393,13 +393,13 @@ if SERVER then
 
     function meta:lfsSetInput( name, value )
         self.LFS_KEYDOWN = self.LFS_KEYDOWN and self.LFS_KEYDOWN or {}
-        self.LFS_KEYDOWN[ name ] = value
+        self.LFS_KEYDOWN[name] = value
     end
 
     function simfphys.LFS:AddColDMGFilterClass( name_class )
         if not isstring( name_class ) then return end
 
-        simfphys.LFS.CollisionFilter[ name_class:lower() ] = true
+        simfphys.LFS.CollisionFilter[name_class:lower()] = true
     end
 
     function simfphys.LFS:FixVelocity()
@@ -430,8 +430,8 @@ if SERVER then
 
     hook.Add( "PlayerButtonUp", "!!!lfsButtonUp", function( ply, button )
         for _, LFS_BIND in pairs( ply:lfsGetControls() ) do
-            if LFS_BIND[ button ] then
-                ply:lfsSetInput( LFS_BIND[ button ], false )
+            if LFS_BIND[button] then
+                ply:lfsSetInput( LFS_BIND[button], false )
             end
         end
     end )
@@ -440,12 +440,12 @@ if SERVER then
         local vehicle = ply:lfsGetPlane()
 
         for _, LFS_BIND in pairs( ply:lfsGetControls() ) do
-            if LFS_BIND[ button ] then
-                ply:lfsSetInput( LFS_BIND[ button ], true )
+            if LFS_BIND[button] then
+                ply:lfsSetInput( LFS_BIND[button], true )
 
                 if IsValid( vehicle ) then
                     if ply.LFS_HIPSTER then
-                        if LFS_BIND[ button ] == "EXIT" then
+                        if LFS_BIND[button] == "EXIT" then
                             timer.Simple( 0, function()
                                 ply:ExitVehicle()
                             end )
@@ -494,7 +494,7 @@ if SERVER then
             for _, Pod in pairs( vehicle:GetPassengerSeats() ) do
                 if not IsValid( Pod ) then continue end
 
-                if Pod:GetNWInt( "pPodIndex", 3 ) == simfphys.LFS.pSwitchKeys[ button ] then
+                if Pod:GetNWInt( "pPodIndex", 3 ) == simfphys.LFS.pSwitchKeys[button] then
                     if hook.Run( "LFS.OnPlayerRequestSeatSwitch", ply, vehicle, CurPod, Pod ) ~= false then
                         if not IsValid( Pod:GetDriver() ) then
                             ply:ExitVehicle()
@@ -944,14 +944,14 @@ if CLIENT then
             simfphys.LFS.DrawDiamond( X + 1, Y + 1, 24, target_ent:GetShield() / target_ent:GetMaxShield() )
         end
 
-        --[[ old style
+        --[[old style
         local Size = 60
 
         surface.DrawLine( X - Size, Y + Size, X + Size, Y + Size )
         surface.DrawLine( X - Size, Y - Size, X - Size, Y + Size )
         surface.DrawLine( X + Size, Y - Size, X + Size, Y + Size )
         surface.DrawLine( X - Size, Y - Size, X + Size, Y - Size )
-        ]]
+       ]]
     end
 
     local function PaintPlaneHud( ent, X, Y, ply )
@@ -999,7 +999,7 @@ if CLIENT then
         for _, ply in pairs( player.GetAll() ) do
             if ply:lfsGetPlane() == ent then
                 local Pod = ply:GetVehicle()
-                Passengers[ Pod:GetNWInt( "pPodIndex", -1 ) ] = ply:GetName()
+                Passengers[Pod:GetNWInt( "pPodIndex", -1 )] = ply:GetName()
             end
         end
         if ent:GetAI() then
@@ -1700,11 +1700,11 @@ if CLIENT then
         if t.Entity.LFS then
             local SoundFile = t.SoundName
 
-            if LFSSoundList[ SoundFile ] == true then
+            if LFSSoundList[SoundFile] == true then
                 t.Volume = t.Volume * cvarVolume:GetFloat()
                 return true
 
-            elseif LFSSoundList[ SoundFile ] == false then
+            elseif LFSSoundList[SoundFile] == false then
                 return false
 
             else
@@ -1712,7 +1712,7 @@ if CLIENT then
 
                 local Exists = file.Exists( "sound/"..File , "GAME" )
 
-                LFSSoundList[ SoundFile ] = Exists
+                LFSSoundList[SoundFile] = Exists
 
                 if not Exists then
                     print("[LFS] '"..SoundFile.."' not found. Soundfile will not be played and is filtered for this game session to avoid fps issues.")

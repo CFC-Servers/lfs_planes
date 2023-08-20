@@ -31,7 +31,7 @@ function EFFECT:Init( data )
 		local emitter = ParticleEmitter( Pos, false )
 
 		if emitter then
-			local particle = emitter:Add( Materials[ math.Round( math.Rand(1, table.Count( Materials ) ) , 0 ) ], Pos )
+			local particle = emitter:Add( Materials[math.Round( math.Rand(1, table.Count( Materials ) ) , 0 )], Pos )
 			local cInt = math.Clamp(100 - 40 * Size,0,255)
 			local rand = Vector( math.random(-1,1), math.random(-1,1), math.random(-1,1) ) * 0.25
 

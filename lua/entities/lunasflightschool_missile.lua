@@ -132,7 +132,7 @@ if SERVER then
 			if IsValid( HitEnt ) and not self.Explode then
 				local Class = HitEnt:GetClass():lower()
 
-				if IsThisSimfphys[ Class ] then
+				if IsThisSimfphys[Class] then
 					local Pos = self:GetPos()
 
 					if Class == "gmod_sent_vehicle_fphysics_wheel" then

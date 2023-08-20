@@ -67,9 +67,9 @@ if SERVER then
 		for _, v in ipairs( FoundVehicles ) do
 			local id = v:EntIndex()
 
-			if not self.FoundVehicles[ id ] then
+			if not self.FoundVehicles[id] then
 				v:StartMaintenance()
-				self.FoundVehicles[ id ] = true
+				self.FoundVehicles[id] = true
 			end
 		end
 
@@ -77,13 +77,13 @@ if SERVER then
 			local v = Entity( id )
 
 			if not IsValid( v ) then
-				self.FoundVehicles[ id ] = nil
+				self.FoundVehicles[id] = nil
 
 				continue
 			else
 				local pos = v:GetPos()
 				if not v.MaintenanceStart then
-					self.FoundVehicles[ id ] = nil
+					self.FoundVehicles[id] = nil
 				end
 			end
 		end

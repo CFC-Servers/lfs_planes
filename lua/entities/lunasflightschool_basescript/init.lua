@@ -491,7 +491,7 @@ function ENT:HandleEngine()
 			self.TargetRPM = math.min( self.TargetRPM, MaxRPMVtolMin )
 		end
 
-		--[[ -- while it makes perfect sense to clamp it in both directions, it just doesnt feel right
+		--[[ while it makes perfect sense to clamp it in both directions, it just doesnt feel right
 		local MaxRPMVtolMax = self:GetMaxRPM() * (self.VtolAllowInputBelowThrottle / 100)
 		if self:GetRPM() > MaxRPMVtolMax and not KeyBrake then
 			self.TargetRPM = math.max( self.TargetRPM, MaxRPMVtolMax )
@@ -1545,7 +1545,7 @@ function ENT:PhysicsCollide( data, physobj )
 	end
 
 	if IsValid( data.HitEntity ) then
-		if data.HitEntity:IsPlayer() or data.HitEntity:IsNPC() or simfphys.LFS.CollisionFilter[ data.HitEntity:GetClass():lower() ] then
+		if data.HitEntity:IsPlayer() or data.HitEntity:IsNPC() or simfphys.LFS.CollisionFilter[data.HitEntity:GetClass():lower()] then
 			return
 		end
 	end

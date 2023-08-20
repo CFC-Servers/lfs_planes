@@ -169,7 +169,7 @@ function ENT:SoundStop()
 end
 
 function ENT:AnimFins()
-	--[[ function gets called each frame by the base script. you can do whatever you want here ]]--
+	-- function gets called each frame by the base script. you can do whatever you want here
 end
 
 function ENT:AnimRotor()
@@ -194,17 +194,17 @@ function ENT:AnimRotor()
 end
 
 function ENT:PlayFlybySND()
-	--[[ play a flyby sound here ]]--
+	--[[play a flyby sound here]]--
 end
 
 function ENT:AnimCabin()
-	--[[ function gets called each frame by the base script. you can do whatever you want here ]]--
+	--[[function gets called each frame by the base script. you can do whatever you want here]]--
 end
 
 function ENT:AnimLandingGear()
-	--[[ function gets called each frame by the base script. you can do whatever you want here ]]--
+	--[[function gets called each frame by the base script. you can do whatever you want here]]--
 end
 
 function ENT:ExhaustFX()
-	--[[ function gets called each frame by the base script. you can do whatever you want here ]]--
+	--[[function gets called each frame by the base script. you can do whatever you want here]]--
 end
