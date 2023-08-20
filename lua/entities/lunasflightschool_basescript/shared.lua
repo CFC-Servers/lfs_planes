@@ -1,5 +1,3 @@
---DO NOT EDIT OR REUPLOAD THIS FILE
-
 ENT.Type = "anim"
 
 ENT.PrintName = "basescript"

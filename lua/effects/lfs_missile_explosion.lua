@@ -1,5 +1,3 @@
---DO NOT EDIT OR REUPLOAD THIS FILE
-
 EFFECT.mat = Material( "sprites/light_glow02_add" )
 EFFECT.Materials = {
 	"particle/smokesprites_0001",

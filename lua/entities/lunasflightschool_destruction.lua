@@ -1,5 +1,3 @@
---DO NOT EDIT OR REUPLOAD THIS FILE
-
 AddCSLuaFile()
 
 ENT.Type = "anim"

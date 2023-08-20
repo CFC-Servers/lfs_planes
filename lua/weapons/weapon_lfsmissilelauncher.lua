@@ -1,5 +1,3 @@
---DO NOT EDIT OR REUPLOAD THIS FILE
-
 AddCSLuaFile()
 
 SWEP.Category	 = "Other"

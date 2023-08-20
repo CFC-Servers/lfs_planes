@@ -1,5 +1,3 @@
---DO NOT EDIT OR REUPLOAD THIS FILE
-
 function EFFECT:Init( data )
 	self.Pos = data:GetOrigin()
 	self.Dir = data:GetNormal()

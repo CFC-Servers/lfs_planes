@@ -1,5 +1,3 @@
---DO NOT EDIT OR REUPLOAD THIS FILE
-
 EFFECT.Mat = Material( "effects/gunshiptracer" )
 
 function EFFECT:Init( data )

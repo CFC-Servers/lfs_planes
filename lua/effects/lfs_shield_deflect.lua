@@ -1,5 +1,3 @@
---DO NOT EDIT OR REUPLOAD THIS FILE
-
 function EFFECT:Init( data )
 	self.Ent = data:GetEntity()
 	self.Pos = data:GetOrigin()

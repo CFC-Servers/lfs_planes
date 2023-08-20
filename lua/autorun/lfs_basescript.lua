@@ -1,5 +1,3 @@
---DO NOT EDIT OR REUPLOAD THIS FILE
-
 local cVar_playerignore = GetConVar( "ai_ignoreplayers" )
 local meta = FindMetaTable( "Player" )
 
