@@ -23,16 +23,16 @@ function ENT:PrimaryAttack()
 	local Mirror = self.MirrorPrimary and -1 or 1
 	
 	local bullet = {}
-	bullet.Num 	= 1
-	bullet.Src 	= self:LocalToWorld( Vector(109.29,7.13 * Mirror,92.85) )
-	bullet.Dir 	= self:GetForward()
-	bullet.Spread 	= Vector( 0.015,  0.015, 0 )
-	bullet.Tracer	= 1
-	bullet.TracerName	= "lfs_tracer_green"
-	bullet.Force	= 10
-	bullet.HullSize 	= 5
-	bullet.Damage	= 10
-	bullet.Attacker 	= self:GetDriver()
+	bullet.Num = 1
+	bullet.Src = self:LocalToWorld( Vector(109.29,7.13 * Mirror,92.85) )
+	bullet.Dir = self:GetForward()
+	bullet.Spread = Vector( 0.015,  0.015, 0 )
+	bullet.Tracer = 1
+	bullet.TracerName = "lfs_tracer_green"
+	bullet.Force = 10
+	bullet.HullSize = 5
+	bullet.Damage = 10
+	bullet.Attacker = self:GetDriver()
 	bullet.AmmoType = "Pistol"
 	bullet.Callback = function(att, tr, dmginfo)
 		dmginfo:SetDamageType(DMG_AIRBOAT)
@@ -58,16 +58,16 @@ function ENT:SecondaryAttack()
 	
 	local bullet = {}
 
-	bullet.Num 	= 1
-	bullet.Src 	= self:LocalToWorld( Vector(93.58,85.93 * Mirror,63.63) )
-	bullet.Dir 	= self:LocalToWorldAngles( Angle(0,-0.5 * Mirror,0) ):Forward()
-	bullet.Spread 	= Vector( 0.015,  0.015, 0 )
-	bullet.Tracer	= 1
-	bullet.TracerName	= "lfs_tracer_red"
-	bullet.Force	= 100
-	bullet.HullSize 	= 10
-	bullet.Damage	= 125
-	bullet.Attacker 	= self:GetDriver()
+	bullet.Num = 1
+	bullet.Src = self:LocalToWorld( Vector(93.58,85.93 * Mirror,63.63) )
+	bullet.Dir = self:LocalToWorldAngles( Angle(0,-0.5 * Mirror,0) ):Forward()
+	bullet.Spread = Vector( 0.015,  0.015, 0 )
+	bullet.Tracer = 1
+	bullet.TracerName = "lfs_tracer_red"
+	bullet.Force = 100
+	bullet.HullSize = 10
+	bullet.Damage = 125
+	bullet.Attacker = self:GetDriver()
 	bullet.AmmoType = "Pistol"
 	bullet.Callback = function(att, tr, dmginfo)
 		dmginfo:SetDamageType(DMG_AIRBOAT)

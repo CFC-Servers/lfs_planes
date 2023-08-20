@@ -1,6 +1,6 @@
 --DO NOT EDIT OR REUPLOAD THIS FILE
 
-ENT.Type            = "anim"
+ENT.Type = "anim"
 DEFINE_BASECLASS( "lunasflightschool_basescript_heli" )
 
 ENT.PrintName = "Combine Helicopter"
@@ -8,8 +8,8 @@ ENT.Author = "Luna"
 ENT.Information = "Combine Attack Helicopter from Half Life 2 + Episodes"
 ENT.Category = "[LFS]"
 
-ENT.Spawnable		= true
-ENT.AdminSpawnable	= false
+ENT.Spawnable = true
+ENT.AdminSpawnable = false
 
 ENT.MDL = "models/Combine_Helicopter.mdl"
 ENT.GibModels = {

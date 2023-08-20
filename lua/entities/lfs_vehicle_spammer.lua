@@ -2,15 +2,15 @@
 
 AddCSLuaFile()
 
-ENT.Type            = "anim"
+ENT.Type = "anim"
 
 ENT.PrintName = "AI Vehicle Spammer"
 ENT.Author = "Luna"
 ENT.Information = "AI Vehicle Spawner. Spammer in the hands of a Minge."
 ENT.Category = "[LFS]"
 
-ENT.Spawnable		= true
-ENT.AdminOnly		= true
+ENT.Spawnable = true
+ENT.AdminOnly = true
 ENT.Editable = true
 
 function ENT:SetupDataTables()

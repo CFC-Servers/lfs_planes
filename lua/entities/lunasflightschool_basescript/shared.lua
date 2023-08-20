@@ -1,14 +1,14 @@
 --DO NOT EDIT OR REUPLOAD THIS FILE
 
-ENT.Type            = "anim"
+ENT.Type = "anim"
 
 ENT.PrintName = "basescript"
 ENT.Author = "Luna"
 ENT.Information = "Luna's Flight School Plane Basescript"
 ENT.Category = "[LFS]"
 
-ENT.Spawnable		= false
-ENT.AdminSpawnable  = false
+ENT.Spawnable = false
+ENT.AdminSpawnable = false
 
 ENT.AutomaticFrameAdvance = true
 ENT.RenderGroup = RENDERGROUP_BOTH 

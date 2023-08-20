@@ -84,21 +84,21 @@ function ENT:PrimaryAttack()
 	if not isvector( self.StartPos ) or not isangle( self.AimDir ) or not isnumber( self.MuzzleID ) then return end
 
 	local bullet = {}
-		bullet.Num 			= 1
-		bullet.Src 			= self.StartPos
-		bullet.Dir 			= self.AimDir:Forward()
-		bullet.Spread 		= Vector(0.04,0.04,0)
-		bullet.Tracer		= 2
-		bullet.TracerName 	= "lfs_combine_tracer"
-		bullet.Force		= 12
-		bullet.Damage		= 12
-		bullet.HullSize		= 30
-		bullet.IgnoreEntity 	= self
+		bullet.Num 	 = 1
+		bullet.Src 	 = self.StartPos
+		bullet.Dir 	 = self.AimDir:Forward()
+		bullet.Spread = Vector(0.04,0.04,0)
+		bullet.Tracer = 2
+		bullet.TracerName = "lfs_combine_tracer"
+		bullet.Force = 12
+		bullet.Damage = 12
+		bullet.HullSize = 30
+		bullet.IgnoreEntity = self
 		bullet.DisableOverride = true
 		bullet.Callback = function(att, tr, dmginfo)
 			dmginfo:SetDamageType(DMG_AIRBOAT)
 		end
-		bullet.Attacker 	= self:GetDriver()
+		bullet.Attacker = self:GetDriver()
 	self:FireBullets( bullet )
 	
 	self:SetAmmoPrimary( math.max( self.charge, 0 ) )

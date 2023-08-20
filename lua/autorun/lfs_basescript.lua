@@ -1403,7 +1403,7 @@ if CLIENT then
                     draw.DrawText( "You need to re-enter the vehicle in order for the changes to take effect!", "LFS_FONT_PANEL", w * 0.5, -1, Color( 255, 50, 50, 255 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
                 end
 
-                local y  = 30
+                local y = 30
 
                 local CheckBox = vgui.Create( "DCheckBoxLabel",DScrollPanel)
                 CheckBox:SetText( "Disable Q-Menu while inside Vehicle" )

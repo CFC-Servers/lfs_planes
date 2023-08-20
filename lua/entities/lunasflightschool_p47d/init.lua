@@ -28,16 +28,16 @@ function ENT:PrimaryAttack()
 	if self.NumPrim > 8 then self.NumPrim = 1 end
 	
 	local bullet = {}
-	bullet.Num 	= 1
-	bullet.Src 	= self:LocalToWorld( fP[self.NumPrim] )
-	bullet.Dir 	= self:LocalToWorldAngles( Angle(-0.5,(fP[self.NumPrim].y > 0 and -2 or 2),0) ):Forward()
-	bullet.Spread 	= Vector( 0.015,  0.015, 0 )
-	bullet.Tracer	= 1
-	bullet.TracerName	= "lfs_tracer_green"
-	bullet.Force	= 100
-	bullet.HullSize 	= 10
-	bullet.Damage	= 32
-	bullet.Attacker 	= self:GetDriver()
+	bullet.Num = 1
+	bullet.Src = self:LocalToWorld( fP[self.NumPrim] )
+	bullet.Dir = self:LocalToWorldAngles( Angle(-0.5,(fP[self.NumPrim].y > 0 and -2 or 2),0) ):Forward()
+	bullet.Spread = Vector( 0.015,  0.015, 0 )
+	bullet.Tracer = 1
+	bullet.TracerName = "lfs_tracer_green"
+	bullet.Force = 100
+	bullet.HullSize = 10
+	bullet.Damage = 32
+	bullet.Attacker = self:GetDriver()
 	bullet.AmmoType = "Pistol"
 	bullet.Callback = function(att, tr, dmginfo)
 		dmginfo:SetDamageType(DMG_AIRBOAT)

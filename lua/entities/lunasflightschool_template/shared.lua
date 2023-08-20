@@ -1,7 +1,7 @@
 -- YOU CAN EDIT AND REUPLOAD THIS FILE. 
 -- HOWEVER MAKE SURE TO RENAME THE FOLDER TO AVOID CONFLICTS
 
-ENT.Type            = "anim"
+ENT.Type = "anim"
 DEFINE_BASECLASS( "lunasflightschool_basescript" )
 
 ENT.PrintName = "template script"
@@ -9,8 +9,8 @@ ENT.Author = "*your name*"
 ENT.Information = ""
 ENT.Category = "[LFS] *your category*"
 
-ENT.Spawnable		= false -- set to "true" to make it spawnable
-ENT.AdminSpawnable	= false
+ENT.Spawnable = false -- set to "true" to make it spawnable
+ENT.AdminSpawnable = false
 
 ENT.MDL = "models/props_interiors/BathTub01a.mdl" -- model forward direction must be facing to X+
 --[[

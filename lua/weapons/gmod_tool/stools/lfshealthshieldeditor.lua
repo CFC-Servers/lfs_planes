@@ -1,8 +1,8 @@
 
-TOOL.Category		= "LFS"
-TOOL.Name			= "#tool.lfshealthshieldeditor.name"
-TOOL.Command		= nil
-TOOL.ConfigName		= ""
+TOOL.Category = "LFS"
+TOOL.Name	 = "#tool.lfshealthshieldeditor.name"
+TOOL.Command = nil
+TOOL.ConfigName = ""
 
 TOOL.ClientConVar[ "maxshield" ] = 0
 TOOL.ClientConVar[ "maxhealth" ] = 5000
@@ -87,20 +87,20 @@ function TOOL.BuildCPanel( panel )
 
 	panel:AddControl( "Slider", 
 	{
-		Label 	= "#tool.lfshealthshieldeditor.maxhealth",
-		Type 	= "Int",
-		Min 	= "1",
-		Max 	= "50000",
+		Label = "#tool.lfshealthshieldeditor.maxhealth",
+		Type = "Int",
+		Min = "1",
+		Max = "50000",
 		Command = "lfshealthshieldeditor_maxhealth",
 		Help = false
 	})
 
 	panel:AddControl( "Slider", 
 	{
-		Label 	= "#tool.lfshealthshieldeditor.maxshield",
-		Type 	= "Int",
-		Min 	= "0",
-		Max 	= "50000",
+		Label = "#tool.lfshealthshieldeditor.maxshield",
+		Type = "Int",
+		Min = "0",
+		Max = "50000",
 		Command = "lfshealthshieldeditor_maxshield",
 		Help = false
 	})

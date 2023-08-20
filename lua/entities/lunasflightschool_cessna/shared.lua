@@ -1,6 +1,6 @@
 --DO NOT EDIT OR REUPLOAD THIS FILE
 
-ENT.Type            = "anim"
+ENT.Type = "anim"
 DEFINE_BASECLASS( "lunasflightschool_basescript" )
 
 ENT.PrintName = "Cessna 172"
@@ -8,8 +8,8 @@ ENT.Author = "Luna"
 ENT.Information = "Small and Unarmed Civilian Airplane"
 ENT.Category = "[LFS]"
 
-ENT.Spawnable		= true
-ENT.AdminSpawnable		= false
+ENT.Spawnable = true
+ENT.AdminSpawnable = false
 
 ENT.MDL = "models/blu/cessna.mdl"
 

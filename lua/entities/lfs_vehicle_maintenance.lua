@@ -2,15 +2,15 @@
 
 AddCSLuaFile()
 
-ENT.Type            = "anim"
+ENT.Type = "anim"
 
 ENT.PrintName = "Maintenance Station"
 ENT.Author = "Luna"
 ENT.Information = "Repairs Vehicles"
 ENT.Category = "[LFS]"
 
-ENT.Spawnable		= true
-ENT.AdminOnly		= false
+ENT.Spawnable = true
+ENT.AdminOnly = false
 
 ENT.FoundVehicles = {}
 

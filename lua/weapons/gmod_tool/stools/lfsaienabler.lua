@@ -1,8 +1,8 @@
 
-TOOL.Category		= "LFS"
-TOOL.Name			= "#AI Enabler"
-TOOL.Command		= nil
-TOOL.ConfigName		= ""
+TOOL.Category = "LFS"
+TOOL.Name	 = "#AI Enabler"
+TOOL.Command = nil
+TOOL.ConfigName = ""
 
 if CLIENT then
 	language.Add( "tool.lfsaienabler.name", "AI Enabler" )

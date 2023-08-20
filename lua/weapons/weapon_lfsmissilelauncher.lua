@@ -2,35 +2,35 @@
 
 AddCSLuaFile()
 
-SWEP.Category			= "Other"
-SWEP.PrintName		= "[LFS] Missile Launcher"
-SWEP.Author			= "Luna"
-SWEP.Slot				= 4
-SWEP.SlotPos			= 9
-SWEP.DrawWeaponInfoBox 	= false
+SWEP.Category	 = "Other"
+SWEP.PrintName = "[LFS] Missile Launcher"
+SWEP.Author	 = "Luna"
+SWEP.Slot		 = 4
+SWEP.SlotPos	 = 9
+SWEP.DrawWeaponInfoBox = false
 SWEP.BounceWeaponIcon = false
 
-SWEP.Spawnable		= true
-SWEP.AdminSpawnable	= false
-SWEP.ViewModel		= "models/weapons/c_rpg.mdl"
-SWEP.WorldModel		= "models/weapons/w_rocket_launcher.mdl"
-SWEP.UseHands			= true
-SWEP.ViewModelFlip		= false
-SWEP.ViewModelFOV		= 53
-SWEP.Weight 			= 42
-SWEP.AutoSwitchTo 		= true
-SWEP.AutoSwitchFrom 	= true
-SWEP.HoldType			= "rpg"
+SWEP.Spawnable = true
+SWEP.AdminSpawnable = false
+SWEP.ViewModel = "models/weapons/c_rpg.mdl"
+SWEP.WorldModel = "models/weapons/w_rocket_launcher.mdl"
+SWEP.UseHands	 = true
+SWEP.ViewModelFlip = false
+SWEP.ViewModelFOV = 53
+SWEP.Weight 	 = 42
+SWEP.AutoSwitchTo = true
+SWEP.AutoSwitchFrom = true
+SWEP.HoldType	 = "rpg"
 
-SWEP.Primary.ClipSize	= 1
-SWEP.Primary.DefaultClip	= 8
-SWEP.Primary.Automatic	= false
-SWEP.Primary.Ammo		= "RPG_Round"
+SWEP.Primary.ClipSize = 1
+SWEP.Primary.DefaultClip = 8
+SWEP.Primary.Automatic = false
+SWEP.Primary.Ammo = "RPG_Round"
 
-SWEP.Secondary.ClipSize		= -1
-SWEP.Secondary.DefaultClip	= -1
-SWEP.Secondary.Automatic		= false
-SWEP.Secondary.Ammo		= "none"
+SWEP.Secondary.ClipSize = -1
+SWEP.Secondary.DefaultClip = -1
+SWEP.Secondary.Automatic = false
+SWEP.Secondary.Ammo = "none"
 
 function SWEP:SetupDataTables()
 	self:NetworkVar( "Entity",0, "ClosestEnt" )

@@ -1,6 +1,6 @@
 --DO NOT EDIT OR REUPLOAD THIS FILE
 
-ENT.Type            = "anim"
+ENT.Type = "anim"
 DEFINE_BASECLASS( "lunasflightschool_basescript" )
 
 ENT.PrintName = "P-47D"
@@ -8,8 +8,8 @@ ENT.Author = "Luna"
 ENT.Information = "American World War 2 Fighterplane"
 ENT.Category = "[LFS]"
 
-ENT.Spawnable		= true
-ENT.AdminSpawnable		= false
+ENT.Spawnable = true
+ENT.AdminSpawnable = false
 
 ENT.MDL = "models/p-47 (fly).mdl"
 

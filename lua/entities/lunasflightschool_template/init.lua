@@ -51,16 +51,16 @@ function ENT:PrimaryAttack()
 	local Driver = self:GetDriver()
 	
 	local bullet = {}
-	bullet.Num 	= 1
-	bullet.Src 	= self:LocalToWorld( Vector(20,0,10) )
-	bullet.Dir 	= self:GetForward()
-	bullet.Spread 	= Vector( 0.015,  0.015, 0 )
-	bullet.Tracer	= 1
-	bullet.TracerName	= "lfs_tracer_green"
-	bullet.Force	= 10
-	bullet.HullSize 	= 5
-	bullet.Damage	= 5
-	bullet.Attacker 	= Driver
+	bullet.Num = 1
+	bullet.Src = self:LocalToWorld( Vector(20,0,10) )
+	bullet.Dir = self:GetForward()
+	bullet.Spread = Vector( 0.015,  0.015, 0 )
+	bullet.Tracer = 1
+	bullet.TracerName = "lfs_tracer_green"
+	bullet.Force = 10
+	bullet.HullSize = 5
+	bullet.Damage = 5
+	bullet.Attacker = Driver
 	bullet.AmmoType = "Pistol"
 	
 	self:FireBullets( bullet )

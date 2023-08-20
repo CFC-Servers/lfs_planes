@@ -2,7 +2,7 @@
 
 AddCSLuaFile()
 
-ENT.Type            = "anim"
+ENT.Type = "anim"
 
 function ENT:SetupDataTables()
 	self:NetworkVar( "Bool",0, "Disabled" )

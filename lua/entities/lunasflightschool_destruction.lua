@@ -2,7 +2,7 @@
 
 AddCSLuaFile()
 
-ENT.Type            = "anim"
+ENT.Type = "anim"
 
 if CLIENT then
 	function ENT:Draw()
@@ -14,14 +14,14 @@ if SERVER then
 		self:PhysicsInit( SOLID_VPHYSICS )
 		self:SetMoveType( MOVETYPE_NONE )
 		self:SetSolid( SOLID_NONE )
-		self:DrawShadow( false ) 
-	
+		self:DrawShadow( false )
+
 		self.Vel = isvector( self.Vel ) and self.Vel or Vector(0,0,0)
 
 		local effectdata = EffectData()
 			effectdata:SetOrigin( self:GetPos() )
 		util.Effect( "lfs_explosion", effectdata )
-		
+
 		local gibs = {
 			"models/XQM/wingpiece2.mdl",
 			"models/XQM/wingpiece2.mdl",
@@ -34,17 +34,17 @@ if SERVER then
 			"models/XQM/jettailpiece1medium.mdl",
 			"models/XQM/pistontype1huge.mdl",
 		}
-		
+
 		self.GibModels = istable( self.GibModels ) and self.GibModels or gibs
-		
+
 		self.Gibs = {}
 		self.DieTime = CurTime() + 5
-		
+
 		for _, v in pairs( self.GibModels ) do
 			local ent = ents.Create( "prop_physics" )
-			
+
 			if IsValid( ent ) then
-				table.insert( self.Gibs, ent ) 
+				table.insert( self.Gibs, ent )
 
 				ent:SetPos( self:GetPos() )
 				ent:SetAngles( self:GetAngles() )
@@ -58,8 +58,8 @@ if SERVER then
 				local PhysObj = ent:GetPhysicsObject()
 				if IsValid( PhysObj ) then
 					PhysObj:SetVelocityInstantaneous( VectorRand() * math.max(300,self.Vel:Length() / 3) + self.Vel  )
-					PhysObj:AddAngleVelocity( VectorRand() * 500 ) 
-					PhysObj:EnableDrag( false ) 
+					PhysObj:AddAngleVelocity( VectorRand() * 500 )
+					PhysObj:EnableDrag( false )
 
 					local effectdata = EffectData()
 						effectdata:SetOrigin( ent:GetPos() )
@@ -69,11 +69,11 @@ if SERVER then
 						effectdata:SetMagnitude( math.Rand(0.5,2.5) )
 					util.Effect( "lfs_firetrail", effectdata )
 				end
-				
+
 				timer.Simple( 4.5 + math.Rand(0,0.5), function()
 					if not IsValid( ent ) then return end
-					ent:SetRenderFX( kRenderFxFadeFast  ) 
-				end)
+					ent:SetRenderFX( kRenderFxFadeFast  )
+				end )
 			end
 		end
 	end
@@ -82,7 +82,7 @@ if SERVER then
 		if self.DieTime < CurTime() then
 			self:Remove()
 		end
-		
+
 		self:NextThink( CurTime() )
 		return true
 	end

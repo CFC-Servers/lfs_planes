@@ -74,8 +74,8 @@ function ENT:CalcFlight()
 		PitchUp = Driver:lfsGetInput( "+PITCH_HELI" )
 		PitchDn = Driver:lfsGetInput( "-PITCH_HELI" )
 		
-		YawL  = Driver:lfsGetInput( "-YAW_HELI" )
-		YawR  = Driver:lfsGetInput( "+YAW_HELI" )
+		YawL = Driver:lfsGetInput( "-YAW_HELI" )
+		YawR = Driver:lfsGetInput( "+YAW_HELI" )
 		
 		RollL = Driver:lfsGetInput( "-ROLL_HELI" )
 		RollR = Driver:lfsGetInput( "+ROLL_HELI" )
