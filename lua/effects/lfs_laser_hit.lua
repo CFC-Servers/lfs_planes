@@ -3,23 +3,23 @@
 function EFFECT:Init( data )
 	self.Pos = data:GetOrigin()
 	self.Col = data:GetStart() or Vector(255,100,0)
-	
+
 	self.mat = Material( "sprites/light_glow02_add" )
-	
+
 	self.LifeTime = 0.2
 	self.DieTime = CurTime() + self.LifeTime
 
 	local Col = self.Col
 	local Pos = self.Pos
 	local Dir = data:GetNormal()
-	
+
 	local emitter = ParticleEmitter( Pos, false )
-	
+
 	for i = 0, 10 do
 		local particle = emitter:Add( "sprites/light_glow02_add", Pos )
-		
+
 		local vel = VectorRand() * 200 - Dir  * 80
-		
+
 		if particle then
 			particle:SetVelocity( vel )
 			particle:SetAngles( vel:Angle() + Angle(0,90,0) )
@@ -34,12 +34,12 @@ function EFFECT:Init( data )
 			particle:SetGravity( Vector(0,0,-600) )
 
 			particle:SetAirResistance( 0 )
-			
+
 			particle:SetCollide( true )
 			particle:SetBounce( 0.5 )
 		end
 	end
-	
+
 	emitter:Finish()
 end
 

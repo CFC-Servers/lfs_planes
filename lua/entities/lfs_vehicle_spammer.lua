@@ -14,7 +14,7 @@ ENT.AdminOnly = true
 ENT.Editable = true
 
 function ENT:SetupDataTables()
-	local AllSents = scripted_ents.GetList() 
+	local AllSents = scripted_ents.GetList()
 	local SpawnOptions = {}
 
 	for _, v in pairs( AllSents ) do
@@ -100,7 +100,7 @@ if SERVER then
 		if NewHealth <= 0 then
 			if not self.MarkForRemove then
 				self.MarkForRemove =  true
-	
+
 				for i = -5, 5 do
 					local Pos = self:LocalToWorld( Vector(0,i * 100,10)  )
 
@@ -114,16 +114,16 @@ if SERVER then
 		end
 	end
 
-	function ENT:Initialize()	
+	function ENT:Initialize()
 		self:SetModel( "models/props_phx/huge/road_medium.mdl" )
-		
+
 		self:PhysicsInit( SOLID_VPHYSICS )
 		self:SetMoveType( MOVETYPE_VPHYSICS )
 		self:SetSolid( SOLID_VPHYSICS )
 		self:SetUseType( SIMPLE_USE )
 
 		self:SetCollisionGroup( COLLISION_GROUP_WORLD )
-		
+
 		self.NextSpawn = 0
 	end
 
@@ -135,7 +135,7 @@ if SERVER then
 			self.DefuseTime = CurTime()
 		end
 	end
-	
+
 	function ENT:Think()
 		if IsValid( self.Defusor ) and isnumber( self.DefuseTime ) then
 			if self.Defusor:KeyDown( IN_USE ) then
@@ -178,20 +178,20 @@ if SERVER then
 		if not self:GetMasterSwitch() then return end
 
 		self.spawnedvehicles = self.spawnedvehicles or {}
-		
+
 		if self.ShouldSpawn then
 			if self.NextSpawn < CurTime() then
-				
+
 				self.ShouldSpawn = false
-				
+
 				local pos = self:LocalToWorld( Vector( 0, 500, 150 ) )
 				local ang = self:LocalToWorldAngles( Angle( 0, -90, 0 ) )
-				
+
 				local Type = self:GetType()
-				
+
 				if Type ~= "" then
 					local spawnedvehicle = ents.Create( Type )
-					
+
 					if IsValid( spawnedvehicle ) then
 						spawnedvehicle:SetPos( pos )
 						spawnedvehicle:SetAngles( ang )
@@ -216,7 +216,7 @@ if SERVER then
 
 						if not spawnedvehicle.DontPushMePlease then
 							local PhysObj = spawnedvehicle:GetPhysicsObject()
-							
+
 							if IsValid( PhysObj ) then
 								PhysObj:SetVelocityInstantaneous( self:GetRight() * 1000 )
 							end
@@ -243,22 +243,22 @@ if SERVER then
 					self.spawnedvehicles[k] = nil
 				end
 			end
-			
+
 			if AmountSpawned < self:GetAmount() then
 				self.ShouldSpawn = true
 				self.NextSpawn = CurTime() + self:GetRespawnTime()
 			end
 		end
-		
+
 		self:NextThink( CurTime() )
-		
+
 		return true
 	end
 end
 
 if CLIENT then
 	local mat = Material( "sprites/light_glow02_add" )
-	
+
 	function ENT:Draw()
 		self:DrawModel()
 
@@ -274,10 +274,10 @@ if CLIENT then
 			render.SetMaterial( mat )
 			render.DrawSprite( self:LocalToWorld( Vector(125,500 - self.PX,10) ), 32, 32, Color( 255, 255, 255, 255) )
 			render.DrawSprite( self:LocalToWorld( Vector(-125,500 - self.PX,10) ), 32, 32, Color( 255, 255, 255, 255) )
-			
+
 			render.DrawSprite( self:LocalToWorld( Vector(125,500 - self.PX,10) ), 130, 130, Color( 255, 0, 0, 255) )
 			render.DrawSprite( self:LocalToWorld( Vector(-125,500 - self.PX,10) ), 130, 130, Color( 255, 0, 0, 255) )
-			
+
 			return
 		end
 
@@ -286,7 +286,7 @@ if CLIENT then
 		render.SetMaterial( mat )
 		render.DrawSprite( self:LocalToWorld( Vector(125,500 - self.PX,10) ), 32, 32, Color( 255, 255, 255, 255) )
 		render.DrawSprite( self:LocalToWorld( Vector(-125,500 - self.PX,10) ), 32, 32, Color( 255, 255, 255, 255) )
-		
+
 		render.DrawSprite( self:LocalToWorld( Vector(125,500 - self.PX,10) ), 130, 130, Color( 0, 127, 255, 255) )
 		render.DrawSprite( self:LocalToWorld( Vector(-125,500 - self.PX,10) ), 130, 130, Color( 0, 127, 255, 255) )
 	end

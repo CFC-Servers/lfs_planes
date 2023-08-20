@@ -21,16 +21,16 @@ local Materials = {
 
 function EFFECT:Init( data )
 	local Pos = data:GetOrigin() + VectorRand() * 50
-	
+
 	local emitter = ParticleEmitter( Pos, false )
 
 	if emitter then
 		local particle = emitter:Add( Materials[math.Round(math.Rand(1,table.Count( Materials )),0)], Pos )
-		
+
 		if particle then
 			particle:SetVelocity( VectorRand() * 100 )
 			particle:SetDieTime( 1.5 )
-			particle:SetAirResistance( 600 ) 
+			particle:SetAirResistance( 600 )
 			particle:SetStartAlpha( 50 )
 			particle:SetStartSize( 80 )
 			particle:SetEndSize( math.Rand(250,300) )
@@ -39,7 +39,7 @@ function EFFECT:Init( data )
 			particle:SetGravity( Vector( 0, 0, 500 ) )
 			particle:SetCollide( false )
 		end
-		
+
 		emitter:Finish()
 	end
 end

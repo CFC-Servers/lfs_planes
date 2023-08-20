@@ -17,4 +17,3 @@ end
 function ENT:OnEngineStopped()
 	self:EmitSound( "lfs/cessna/stop.wav" )
 end
-

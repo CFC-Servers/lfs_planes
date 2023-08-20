@@ -24,7 +24,7 @@ function EFFECT:Init( data )
 	self.Scale = data:GetScale()
 	self.DieTime = CurTime() + data:GetMagnitude()
 	self.Pos = data:GetStart()
-	
+
 	if IsValid( self.Entity ) then
 		self.Emitter = ParticleEmitter( self.Entity:LocalToWorld( self.Pos ), false )
 	end
@@ -35,13 +35,13 @@ function EFFECT:Think()
 		local Pos = self.Entity:LocalToWorld( self.Pos )
 
 		self.nextDFX = self.nextDFX or 0
-		
+
 		if self.nextDFX < CurTime() then
 			self.nextDFX = CurTime() + 0.05
 
 			if self.Emitter then
 				local particle = self.Emitter:Add( Materials[math.Round(math.Rand(1,table.Count( Materials )),0)], Pos )
-				
+
 				if particle then
 					particle:SetVelocity( VectorRand() * 100 * self.Scale )
 					particle:SetDieTime( 3 )
@@ -60,7 +60,7 @@ function EFFECT:Think()
 				if particle then
 					particle:SetVelocity( VectorRand() * 100 * self.Scale )
 					particle:SetDieTime( math.random(40,80) / 100 )
-					particle:SetAirResistance( 0 ) 
+					particle:SetAirResistance( 0 )
 					particle:SetStartAlpha( 255 )
 					particle:SetStartSize( 130 * self.Scale )
 					particle:SetEndSize( math.Rand(50,100) * self.Scale )
@@ -72,11 +72,11 @@ function EFFECT:Think()
 
 				for i = 0,3 do
 					local particle = self.Emitter:Add( "particles/flamelet"..math.random(1,5), Pos + VectorRand() * 100 * self.Scale )
-					
+
 					if particle then
 						particle:SetVelocity( VectorRand() * 100 * self.Scale )
 						particle:SetDieTime( math.random(30,60) / 100 )
-						particle:SetAirResistance( 0 ) 
+						particle:SetAirResistance( 0 )
 						particle:SetStartAlpha( 255 )
 						particle:SetStartSize( 70 * self.Scale )
 						particle:SetEndSize( math.Rand(25,80) * self.Scale )
@@ -89,7 +89,7 @@ function EFFECT:Think()
 			end
 		end
 
-		if self.DieTime < CurTime() then 
+		if self.DieTime < CurTime() then
 			if self.Emitter then
 				self.Emitter:Finish()
 			end

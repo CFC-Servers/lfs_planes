@@ -11,7 +11,7 @@ ENT.Spawnable = false
 ENT.AdminSpawnable = false
 
 ENT.AutomaticFrameAdvance = true
-ENT.RenderGroup = RENDERGROUP_BOTH 
+ENT.RenderGroup = RENDERGROUP_BOTH
 
 ENT.Editable = true
 
@@ -61,16 +61,16 @@ function ENT:SetupDataTables()
 	self:NetworkVar( "Entity",1, "DriverSeat" )
 	self:NetworkVar( "Entity",2, "Gunner" )
 	self:NetworkVar( "Entity",3, "GunnerSeat" )
-	
+
 	self:NetworkVar( "Bool",0, "Active" )
 	self:NetworkVar( "Bool",1, "EngineActive" )
 	self:NetworkVar( "Bool",2, "AI",	{ KeyName = "aicontrolled",	Edit = { type = "Boolean",	order = 1,	category = "AI"} } )
 	self:NetworkVar( "Bool",3, "IsGroundTouching" )
 	self:NetworkVar( "Bool",4, "RotorDestroyed" )
 	self:NetworkVar( "Bool",5, "lfsLockedStatus" )
-	
+
 	self:NetworkVar( "Int",2, "AITEAM", { KeyName = "aiteam", Edit = { type = "Int", order = 2,min = 0, max = 3, category = "AI"} } )
-	
+
 	self:NetworkVar( "Float",0, "LGear" )
 	self:NetworkVar( "Float",1, "RGear" )
 	self:NetworkVar( "Float",2, "RPM" )
@@ -88,7 +88,7 @@ function ENT:SetupDataTables()
 
 	if SERVER then
 		self:NetworkVarNotify( "AI", self.OnToggleAI )
-		
+
 		self:SetAITEAM( self.AITEAM )
 		self:SetHP( self.MaxHealth )
 		self:SetShield( self.MaxShield )
@@ -155,7 +155,7 @@ end
 
 function ENT:GetThrustVtol()
 	self.MaxThrustVtol = isnumber( self.MaxThrustVtol ) and self.MaxThrustVtol or self:GetMaxThrust() * 0.15
-	
+
 	return self.MaxThrustVtol
 end
 
@@ -189,14 +189,14 @@ end
 
 function ENT:GetMaxStability()
 	self.MaxStability = self.MaxStability or 1
-	
+
 	return self.MaxStability
 end
 
 function ENT:GetThrottlePercent()
 	local IdleRPM = self:GetIdleRPM()
 	local MaxRPM = self:GetMaxRPM()
-	
+
 	return math.max( math.Round(((self:GetRPM() - IdleRPM) / (MaxRPM - IdleRPM)) * 100,0) ,0)
 end
 
@@ -213,7 +213,7 @@ function ENT:IsHelicopter()
 end
 
 function ENT:GetRepairMode()
-	return self:GetHP() < self.MaxHealth 
+	return self:GetHP() < self.MaxHealth
 end
 
 function ENT:GetAmmoMode()
@@ -223,7 +223,7 @@ end
 function ENT:GetPassengerSeats()
 	if not istable( self.pSeats ) then
 		self.pSeats = {}
-		
+
 		local DriverSeat = self:GetDriverSeat()
 
 		for _, v in pairs( self:GetChildren() ) do
@@ -232,7 +232,7 @@ function ENT:GetPassengerSeats()
 			end
 		end
 	end
-	
+
 	return self.pSeats
 end
 

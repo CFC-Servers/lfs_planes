@@ -25,25 +25,25 @@ function EFFECT:Init( data )
 	self.DieTime = CurTime() + 1
 
 	self:Explosion( Pos, 2 )
-	
+
 	sound.Play( "LFS_PLANE_EXPLOSION", Pos )
-	
+
 	for i = 1, 20 do
 		timer.Simple(math.Rand(0,0.01) * i, function()
 			if IsValid( self ) then
 				local p = Pos + VectorRand() * 10 * i
-				
+
 				self:Explosion( p, math.Rand(0.5,0.8) )
 			end
 		end)
 	end
-	
+
 	self:Debris( Pos )
 end
 
 function EFFECT:Debris( pos )
 	local emitter = ParticleEmitter( pos, false )
-	
+
 	for i = 0,60 do
 		local particle = emitter:Add( "effects/fleck_tile"..math.random(1,2), pos )
 		local vel = VectorRand() * math.Rand(200,600)
@@ -51,7 +51,7 @@ function EFFECT:Debris( pos )
 		if particle then
 			particle:SetVelocity( vel )
 			particle:SetDieTime( math.Rand(10,15) )
-			particle:SetAirResistance( 10 ) 
+			particle:SetAirResistance( 10 )
 			particle:SetStartAlpha( 255 )
 			particle:SetStartSize( 5 )
 			particle:SetEndSize( 5 )
@@ -62,21 +62,21 @@ function EFFECT:Debris( pos )
 			particle:SetBounce( 0.3 )
 		end
 	end
-	
+
 	emitter:Finish()
 end
 
 function EFFECT:Explosion( pos , scale )
 	local emitter = ParticleEmitter( pos, false )
-	
+
 	if emitter then
 		for i = 0,10 do
 			local particle = emitter:Add( Materials[math.random(1,table.Count( Materials ))], pos )
-			
+
 			if particle then
 				particle:SetVelocity( VectorRand() * 1500 * scale )
 				particle:SetDieTime( math.Rand(0.75,1.5) * scale )
-				particle:SetAirResistance( math.Rand(200,600) ) 
+				particle:SetAirResistance( math.Rand(200,600) )
 				particle:SetStartAlpha( 255 )
 				particle:SetStartSize( math.Rand(60,120) * scale )
 				particle:SetEndSize( math.Rand(220,320) * scale )
@@ -86,10 +86,10 @@ function EFFECT:Explosion( pos , scale )
 				particle:SetCollide( false )
 			end
 		end
-		
+
 		for i = 0, 40 do
 			local particle = emitter:Add( "particles/flamelet"..math.random(1,5), pos )
-			
+
 			if particle then
 				particle:SetVelocity( VectorRand() * 1500 * scale )
 				particle:SetDieTime( 0.2 )
@@ -102,10 +102,10 @@ function EFFECT:Explosion( pos , scale )
 				particle:SetCollide( false )
 			end
 		end
-	
+
 		emitter:Finish()
 	end
-	
+
 	local dlight = DynamicLight( math.random(0,9999) )
 	if dlight then
 		dlight.pos = pos
@@ -121,7 +121,7 @@ end
 
 function EFFECT:Think()
 	if CurTime() < self.DieTime then return true end
-	
+
 	return false
 end
 

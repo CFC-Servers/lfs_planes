@@ -3,7 +3,7 @@
 function EFFECT:Init( data )
 	self.Pos = data:GetOrigin()
 	self.Dir = data:GetNormal()
-	
+
 	self:Spark( self.Pos )
 end
 
@@ -28,12 +28,12 @@ local Materials = {
 
 function EFFECT:Spark( pos )
 	local emitter = ParticleEmitter( pos, false )
-	
+
 	for i = 0, 10 do
 		local particle = emitter:Add( "sprites/rico1", pos )
-		
+
 		local vel = VectorRand() * 400 - self.Dir  * 160
-		
+
 		if particle then
 			particle:SetVelocity( vel )
 			particle:SetAngles( vel:Angle() + Angle(0,90,0) )
@@ -48,21 +48,21 @@ function EFFECT:Spark( pos )
 			particle:SetGravity( Vector(0,0,-1500) )
 
 			particle:SetAirResistance( 0 )
-			
+
 			particle:SetCollide( true )
 			particle:SetBounce( 1 )
 		end
 	end
-	
+
 	for i = 0,20 do
 		local particle = emitter:Add( Materials[math.random(1,table.Count( Materials ))],pos )
-		
+
 		local rCol = 255
-		
+
 		if particle then
 			particle:SetVelocity( VectorRand() * math.Rand(100,200) )
 			particle:SetDieTime( math.Rand(0.05,0.2) )
-			particle:SetAirResistance( math.Rand(50,100) ) 
+			particle:SetAirResistance( math.Rand(50,100) )
 			particle:SetStartAlpha( 20 )
 			particle:SetStartSize( 4 )
 			particle:SetEndSize( math.Rand(10,20) )
@@ -72,7 +72,7 @@ function EFFECT:Spark( pos )
 			particle:SetCollide( false )
 		end
 	end
-	
+
 	emitter:Finish()
 end
 

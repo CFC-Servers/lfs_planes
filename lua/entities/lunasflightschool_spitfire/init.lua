@@ -16,11 +16,11 @@ function ENT:PrimaryAttack()
 	end
 
 	self:SetNextPrimary( 0.03 )
-	
+
 	self.MirrorPrimary = not self.MirrorPrimary
-	
+
 	local Mirror = self.MirrorPrimary and -1 or 1
-	
+
 	local bullet = {}
 	bullet.Num = 1
 	bullet.Src = self:LocalToWorld( Vector(136.19,74.97 * Mirror,53.7) )
@@ -37,7 +37,7 @@ function ENT:PrimaryAttack()
 		dmginfo:SetDamageType(DMG_AIRBOAT)
 	end
 	self:FireBullets( bullet )
-	
+
 	self:TakePrimaryAmmo( 2 )
 end
 
@@ -86,7 +86,7 @@ function ENT:HandleWeapons(Fire1, Fire2)
 				end
 			end
 		end
-		
+
 		self.OldFire = Fire1
 	end
 end

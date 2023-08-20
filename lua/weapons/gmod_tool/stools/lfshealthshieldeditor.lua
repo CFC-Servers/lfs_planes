@@ -85,7 +85,7 @@ end
 function TOOL.BuildCPanel( panel )
 	panel:AddControl( "Header", { Text = "#tool.lfshealthshieldeditor.name", Description = "#tool.lfshealthshieldeditor.desc" } )
 
-	panel:AddControl( "Slider", 
+	panel:AddControl( "Slider",
 	{
 		Label = "#tool.lfshealthshieldeditor.maxhealth",
 		Type = "Int",
@@ -95,7 +95,7 @@ function TOOL.BuildCPanel( panel )
 		Help = false
 	})
 
-	panel:AddControl( "Slider", 
+	panel:AddControl( "Slider",
 	{
 		Label = "#tool.lfshealthshieldeditor.maxshield",
 		Type = "Int",

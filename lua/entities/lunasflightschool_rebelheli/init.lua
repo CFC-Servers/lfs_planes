@@ -58,7 +58,7 @@ function ENT:RunOnSpawn()
 			ang = Angle(0,-90,0)
 		},
 	}
-	
+
 	for num, v in pairs( PassengerSeats ) do
 		local Pod = self:AddPassengerSeat( v.pos, v.ang )
 
@@ -106,12 +106,12 @@ end
 
 function ENT:OnRotorDestroyed()
 	self:EmitSound( "physics/metal/metal_box_break2.wav" )
-	
+
 	self:SetBodygroup( 1, 2 )
-	self:SetBodygroup( 2, 2 ) 
-	
+	self:SetBodygroup( 2, 2 )
+
 	self:SetHP(1)
-	
+
 	timer.Simple(2, function()
 		if not IsValid( self ) then return end
 		self:Destroy()

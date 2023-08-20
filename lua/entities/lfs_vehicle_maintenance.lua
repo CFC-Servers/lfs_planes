@@ -35,9 +35,9 @@ if SERVER then
 		self:TakePhysicsDamage( dmginfo )
 	end
 
-	function ENT:Initialize()	
+	function ENT:Initialize()
 		self:SetModel( "models/props_vehicles/generatortrailer01.mdl" )
-		
+
 		self:PhysicsInit( SOLID_VPHYSICS )
 		self:SetMoveType( MOVETYPE_VPHYSICS )
 		self:SetSolid( SOLID_VPHYSICS )
@@ -48,7 +48,7 @@ if SERVER then
 
 	function ENT:Use( ply )
 	end
-	
+
 	function ENT:Think()
 		self:NextThink( CurTime() + 0.5 )
 
@@ -130,7 +130,7 @@ if CLIENT then
 			if (self.WaveScale or 0) > 0 then
 				self.WaveScale = math.max( self.WaveScale - FrameTime(), 0 )
 				local InvScale = 1 - self.WaveScale
-		
+
 				cam.Start3D2D( self:GetPos() + Vector(0,0,10), self:LocalToWorldAngles( Angle(0,-90,0) ), 1 )
 					local Col =  Color(255,255,255,255)
 					surface.SetDrawColor( Col.r, Col.g, Col.b, 10 * self.WaveScale )

@@ -1,4 +1,4 @@
--- YOU CAN EDIT AND REUPLOAD THIS FILE. 
+-- YOU CAN EDIT AND REUPLOAD THIS FILE.
 -- HOWEVER MAKE SURE TO RENAME THE FOLDER TO AVOID CONFLICTS
 
 include("shared.lua")
@@ -13,7 +13,7 @@ function ENT:LFSCalcViewFirstPerson( view, ply ) -- modify first person camera v
 		-- everyone elses view
 	end
 	]]--
-	
+
 	return view
 end
 
@@ -30,9 +30,9 @@ end
 --[[
 function ENT:LFSHudPaintPlaneIdentifier( X, Y, In_Col ) -- plane team-identifier info box
 	surface.SetDrawColor( In_Col.r, In_Col.g, In_Col.b, In_Col.a )
-	
+
 	local Size = 60
-	
+
 	surface.DrawLine( X - Size, Y + Size, X + Size, Y + Size )
 	surface.DrawLine( X - Size, Y - Size, X - Size, Y + Size )
 	surface.DrawLine( X + Size, Y - Size, X + Size, Y + Size )
@@ -73,10 +73,10 @@ function ENT:LFSHudPaintInfoLine( HitPlane, HitPilot, LFS_TIME_NOTIFY, Dir, Len,
 		if FailStart then
 			surface.SetDrawColor( 255, 0, 0, math.abs( math.cos( CurTime() * 10 ) ) * 255 )
 		end
-		
+
 		if not FREELOOK or FailStart then
 			surface.DrawLine( HitPlane.x + Dir.x * 10, HitPlane.y + Dir.y * 10, HitPilot.x - Dir.x * 34, HitPilot.y- Dir.y * 34 )
-			
+
 			-- shadow
 			surface.SetDrawColor( 0, 0, 0, 50 )
 			surface.DrawLine( HitPlane.x + Dir.x * 10 + 1, HitPlane.y + Dir.y * 10 + 1, HitPilot.x - Dir.x * 34+ 1, HitPilot.y- Dir.y * 34 + 1 )
@@ -89,19 +89,19 @@ end
 function ENT:LFSHudPaintCrosshair( HitPlane, HitPilot ) -- crosshair
 	surface.SetDrawColor( 255, 255, 255, 255 )
 	simfphys.LFS.DrawCircle( HitPlane.x, HitPlane.y, 10 ) -- draw's a circle where the plane is looking at
-	surface.DrawLine( HitPlane.x + 10, HitPlane.y, HitPlane.x + 20, HitPlane.y ) 
-	surface.DrawLine( HitPlane.x - 10, HitPlane.y, HitPlane.x - 20, HitPlane.y ) 
-	surface.DrawLine( HitPlane.x, HitPlane.y + 10, HitPlane.x, HitPlane.y + 20 ) 
-	surface.DrawLine( HitPlane.x, HitPlane.y - 10, HitPlane.x, HitPlane.y - 20 ) 
+	surface.DrawLine( HitPlane.x + 10, HitPlane.y, HitPlane.x + 20, HitPlane.y )
+	surface.DrawLine( HitPlane.x - 10, HitPlane.y, HitPlane.x - 20, HitPlane.y )
+	surface.DrawLine( HitPlane.x, HitPlane.y + 10, HitPlane.x, HitPlane.y + 20 )
+	surface.DrawLine( HitPlane.x, HitPlane.y - 10, HitPlane.x, HitPlane.y - 20 )
 	simfphys.LFS.DrawCircle( HitPilot.x, HitPilot.y, 34 ) -- draw's a circle where the pilot is looking at
-	
+
 	-- shadow
 	surface.SetDrawColor( 0, 0, 0, 80 )
 	simfphys.LFS.DrawCircle( HitPlane.x + 1, HitPlane.y + 1, 10 )
-	surface.DrawLine( HitPlane.x + 11, HitPlane.y + 1, HitPlane.x + 21, HitPlane.y + 1 ) 
-	surface.DrawLine( HitPlane.x - 9, HitPlane.y + 1, HitPlane.x - 16, HitPlane.y + 1 ) 
-	surface.DrawLine( HitPlane.x + 1, HitPlane.y + 11, HitPlane.x + 1, HitPlane.y + 21 ) 
-	surface.DrawLine( HitPlane.x + 1, HitPlane.y - 19, HitPlane.x + 1, HitPlane.y - 16 ) 
+	surface.DrawLine( HitPlane.x + 11, HitPlane.y + 1, HitPlane.x + 21, HitPlane.y + 1 )
+	surface.DrawLine( HitPlane.x - 9, HitPlane.y + 1, HitPlane.x - 16, HitPlane.y + 1 )
+	surface.DrawLine( HitPlane.x + 1, HitPlane.y + 11, HitPlane.x + 1, HitPlane.y + 21 )
+	surface.DrawLine( HitPlane.x + 1, HitPlane.y - 19, HitPlane.x + 1, HitPlane.y - 16 )
 	simfphys.LFS.DrawCircle( HitPilot.x + 1, HitPilot.y + 1, 34 )
 
 	self:LFSPaintHitMarker( HitPlane )
@@ -111,30 +111,30 @@ end
 --[[
 function ENT:LFSHudPaintRollIndicator( HitPlane, Enabled ) -- roll indicator
 	if not Enabled then return end
-	
+
 	surface.SetDrawColor( 255, 255, 255, 255 )
-	
+
 	local Roll = self:GetAngles().roll
-	
+
 	local X = math.cos( math.rad( Roll ) )
 	local Y = math.sin( math.rad( Roll ) )
-	
-	surface.DrawLine( HitPlane.x + X * 50, HitPlane.y + Y * 50, HitPlane.x + X * 125, HitPlane.y + Y * 125 ) 
-	surface.DrawLine( HitPlane.x - X * 50, HitPlane.y - Y * 50, HitPlane.x - X * 125, HitPlane.y - Y * 125 ) 
-	
-	surface.DrawLine( HitPlane.x + 125, HitPlane.y, HitPlane.x + 130, HitPlane.y + 5 ) 
-	surface.DrawLine( HitPlane.x + 125, HitPlane.y, HitPlane.x + 130, HitPlane.y - 5 ) 
-	surface.DrawLine( HitPlane.x - 125, HitPlane.y, HitPlane.x - 130, HitPlane.y + 5 ) 
-	surface.DrawLine( HitPlane.x - 125, HitPlane.y, HitPlane.x - 130, HitPlane.y - 5 ) 
-	
+
+	surface.DrawLine( HitPlane.x + X * 50, HitPlane.y + Y * 50, HitPlane.x + X * 125, HitPlane.y + Y * 125 )
+	surface.DrawLine( HitPlane.x - X * 50, HitPlane.y - Y * 50, HitPlane.x - X * 125, HitPlane.y - Y * 125 )
+
+	surface.DrawLine( HitPlane.x + 125, HitPlane.y, HitPlane.x + 130, HitPlane.y + 5 )
+	surface.DrawLine( HitPlane.x + 125, HitPlane.y, HitPlane.x + 130, HitPlane.y - 5 )
+	surface.DrawLine( HitPlane.x - 125, HitPlane.y, HitPlane.x - 130, HitPlane.y + 5 )
+	surface.DrawLine( HitPlane.x - 125, HitPlane.y, HitPlane.x - 130, HitPlane.y - 5 )
+
 	surface.SetDrawColor( 0, 0, 0, 80 )
-	surface.DrawLine( HitPlane.x + X * 50 + 1, HitPlane.y + Y * 50 + 1, HitPlane.x + X * 125 + 1, HitPlane.y + Y * 125 + 1 ) 
-	surface.DrawLine( HitPlane.x - X * 50 + 1, HitPlane.y - Y * 50 + 1, HitPlane.x - X * 125 + 1, HitPlane.y - Y * 125 + 1 ) 
-	
-	surface.DrawLine( HitPlane.x + 126, HitPlane.y + 1, HitPlane.x + 131, HitPlane.y + 6 ) 
-	surface.DrawLine( HitPlane.x + 126, HitPlane.y + 1, HitPlane.x + 131, HitPlane.y - 4 ) 
-	surface.DrawLine( HitPlane.x - 126, HitPlane.y + 1, HitPlane.x - 129, HitPlane.y + 6 ) 
-	surface.DrawLine( HitPlane.x - 126, HitPlane.y + 1, HitPlane.x - 129, HitPlane.y - 4 ) 
+	surface.DrawLine( HitPlane.x + X * 50 + 1, HitPlane.y + Y * 50 + 1, HitPlane.x + X * 125 + 1, HitPlane.y + Y * 125 + 1 )
+	surface.DrawLine( HitPlane.x - X * 50 + 1, HitPlane.y - Y * 50 + 1, HitPlane.x - X * 125 + 1, HitPlane.y - Y * 125 + 1 )
+
+	surface.DrawLine( HitPlane.x + 126, HitPlane.y + 1, HitPlane.x + 131, HitPlane.y + 6 )
+	surface.DrawLine( HitPlane.x + 126, HitPlane.y + 1, HitPlane.x + 131, HitPlane.y - 4 )
+	surface.DrawLine( HitPlane.x - 126, HitPlane.y + 1, HitPlane.x - 129, HitPlane.y + 6 )
+	surface.DrawLine( HitPlane.x - 126, HitPlane.y + 1, HitPlane.x - 129, HitPlane.y - 4 )
 end
 ]]--
 
@@ -156,7 +156,7 @@ end
 
 function ENT:OnRemove()
 	self:SoundStop()
-	
+
 	if IsValid( self.TheRotor ) then -- if we have an rotor
 		self.TheRotor:Remove() -- remove it
 	end
@@ -180,16 +180,16 @@ function ENT:AnimRotor()
 		Rotor:SetModel( "models/XQM/propeller1big.mdl" )
 		Rotor:SetParent( self )
 		Rotor:Spawn()
-		
+
 		self.TheRotor = Rotor
 	end
-	
+
 	local RPM = self:GetRPM() * 2 -- spin twice as fast
 	self.RPM = self.RPM and (self.RPM + RPM * FrameTime()) or 0
-	
+
 	local Rot = Angle(0,0,-self.RPM)
-	Rot:Normalize() 
-	
+	Rot:Normalize()
+
 	self.TheRotor:SetAngles( self:LocalToWorldAngles( Rot ) )
 end
 

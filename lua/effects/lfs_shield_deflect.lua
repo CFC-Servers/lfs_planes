@@ -3,14 +3,14 @@
 function EFFECT:Init( data )
 	self.Ent = data:GetEntity()
 	self.Pos = data:GetOrigin()
-	
+
 	self.mat = Material( "sprites/light_glow02_add" )
-	
+
 	self.LifeTime = 0.2
 	self.DieTime = CurTime() + self.LifeTime
-	
+
 	sound.Play( "lfs/shield_deflect.ogg", self.Pos, 120, 100, 1 )
-	
+
 	self:Spark( self.Pos )
 
 	if IsValid( self.Ent ) then
@@ -27,12 +27,12 @@ end
 
 function EFFECT:Spark( pos )
 	local emitter = ParticleEmitter( pos, false )
-	
+
 	for i = 0, 20 do
 		local particle = emitter:Add( "sprites/rico1", pos )
-		
+
 		local vel = VectorRand() * 500
-		
+
 		if particle then
 			particle:SetVelocity( vel )
 			particle:SetAngles( vel:Angle() + Angle(0,90,0) )
@@ -48,7 +48,7 @@ function EFFECT:Spark( pos )
 			particle:SetAirResistance( 0 )
 		end
 	end
-	
+
 	emitter:Finish()
 end
 
@@ -59,14 +59,14 @@ function EFFECT:Think()
 		end
 	end
 
-	if self.DieTime < CurTime() then 
+	if self.DieTime < CurTime() then
 		if IsValid( self.Model ) then
 			self.Model:Remove()
 		end
 
 		return false
 	end
-	
+
 	return true
 end
 

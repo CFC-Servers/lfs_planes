@@ -23,14 +23,14 @@ function EFFECT:Init( data )
 	local Pos = data:GetOrigin()
 
 	self:Explosion( Pos, 2 )
-	
+
 	sound.Play( "LFS_PLANE_KNOCKOUT", Pos )
-	
+
 	for i = 1, 20 do
 		timer.Simple(math.Rand(0,0.01) * i, function()
 			if IsValid( self ) then
 				local p = Pos + VectorRand() * 10 * i
-				
+
 				self:Explosion( p, math.Rand(0.5,0.8) )
 			end
 		end)
@@ -39,15 +39,15 @@ end
 
 function EFFECT:Explosion( pos , scale )
 	local emitter = ParticleEmitter( pos, false )
-	
+
 	if emitter then
 		for i = 0,10 do
 			local particle = emitter:Add( Materials[math.random(1,table.Count( Materials ))], pos )
-			
+
 			if particle then
 				particle:SetVelocity( VectorRand() * 1000 * scale )
 				particle:SetDieTime( math.Rand(0.75,1.5) * scale )
-				particle:SetAirResistance( math.Rand(200,600) ) 
+				particle:SetAirResistance( math.Rand(200,600) )
 				particle:SetStartAlpha( 255 )
 				particle:SetStartSize( math.Rand(60,120) * scale )
 				particle:SetEndSize( math.Rand(160,280) * scale )
@@ -57,10 +57,10 @@ function EFFECT:Explosion( pos , scale )
 				particle:SetCollide( false )
 			end
 		end
-		
+
 		for i = 0, 40 do
 			local particle = emitter:Add( "particles/flamelet"..math.random(1,5), pos )
-			
+
 			if particle then
 				particle:SetVelocity( VectorRand() * 1000 * scale )
 				particle:SetDieTime( 0.14 )
@@ -73,7 +73,7 @@ function EFFECT:Explosion( pos , scale )
 				particle:SetCollide( false )
 			end
 		end
-	
+
 		emitter:Finish()
 	end
 end

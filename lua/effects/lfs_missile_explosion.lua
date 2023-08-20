@@ -29,11 +29,11 @@ function EFFECT:Init( data )
 
 	for i = 0,30 do
 		local particle = emitter:Add( self.Materials[math.random(1,table.Count( self.Materials ))], self.Pos )
-		
+
 		if particle then
 			particle:SetVelocity( VectorRand(-1,1) * 1200 )
 			particle:SetDieTime( math.Rand(2,3) )
-			particle:SetAirResistance( math.Rand(200,600) ) 
+			particle:SetAirResistance( math.Rand(200,600) )
 			particle:SetStartAlpha( 200 )
 			particle:SetStartSize( math.Rand(60,90) )
 			particle:SetEndSize( math.Rand(125,200) )
@@ -46,7 +46,7 @@ function EFFECT:Init( data )
 
 	for i = 0, 30 do
 		local particle = emitter:Add( "sprites/flamelet"..math.random(1,5), self.Pos )
-		
+
 		if particle then
 			particle:SetVelocity( VectorRand(-1,1) * 500 )
 			particle:SetDieTime( math.Rand(0.15,0.3) )
@@ -62,9 +62,9 @@ function EFFECT:Init( data )
 
 	for i = 0, 20 do
 		local particle = emitter:Add( "sprites/rico1", self.Pos )
-		
+
 		local vel = VectorRand() * 800
-		
+
 		if particle then
 			particle:SetVelocity( vel )
 			particle:SetAngles( vel:Angle() + Angle(0,90,0) )
