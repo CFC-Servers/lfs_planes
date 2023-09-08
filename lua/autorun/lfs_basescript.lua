@@ -1137,11 +1137,11 @@ if CLIENT then
     end )
 
     hook.Add( "HUDShouldDraw", "!!!!_LFS_HideZOOM", function( name )
+        if name ~= "CHudZoom" then return end
         local ply = LocalPlayer()
 
         if not ply.lfsGetPlane or not IsValid( ply:lfsGetPlane() ) then return end
-
-        if name == "CHudZoom" then return false end
+        return false
     end )
 
     hook.Add( "HUDPaint", "!!!!!LFS_hud", function()
