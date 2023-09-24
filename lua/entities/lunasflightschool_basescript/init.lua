@@ -1415,7 +1415,7 @@ function ENT:OnTakeDamage( dmginfo )
 				local Attacker = dmginfo:GetAttacker()
 
 				if IsValid( Attacker ) and Attacker:IsPlayer() then
-					net.Start( "lfs_hitmarker" )
+					net.Start( "lfs_hitmarker", true )
 					net.Send( Attacker )
 				end
 			end
@@ -1427,7 +1427,7 @@ function ENT:OnTakeDamage( dmginfo )
 			local Attacker = dmginfo:GetAttacker()
 
 			if IsValid( Attacker ) and Attacker:IsPlayer() then
-				net.Start( "lfs_hitmarker" )
+				net.Start( "lfs_hitmarker", true )
 				net.Send( Attacker )
 			end
 		end
@@ -1440,7 +1440,7 @@ function ENT:OnTakeDamage( dmginfo )
 
 			local Attacker = self.FinalAttacker
 			if IsValid( Attacker ) and Attacker:IsPlayer() then
-				net.Start( "lfs_killmarker" )
+				net.Start( "lfs_killmarker", true )
 				net.Send( Attacker )
 			end
 
