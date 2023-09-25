@@ -237,7 +237,7 @@ function ENT:CheckRotorClearance()
 
 	self.RotorHitCount = self.RotorHitCount or 0
 
-	if tr.Hit then
+	if tr.Hit and not tr.HitSky then
 		self.RotorHit = true
 
 		self.RotorHitCount = self.RotorHitCount + 1
