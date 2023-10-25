@@ -337,24 +337,27 @@ if SERVER then
         if not IsValid( ply ) then return end
 
         local LFSent = net.ReadEntity()
-
         if not IsValid( LFSent ) then return end
+        if not LFSent.LFS then return end
+        if LFSent.CrosshairFilterEnts then return end
 
-        if not istable( LFSent.CrosshairFilterEnts ) then
-            LFSent.CrosshairFilterEnts = {}
+        local plane = ply:lfsGetPlane()
+        if not IsValid( plane ) then return end
+        if plane ~= LFSent then return end
 
-            for _, ent in pairs( constraint.GetAllConstrainedEntities( LFSent ) ) do
-                if IsValid( ent ) and not ent:GetNoDraw() then
-                    table.insert( LFSent.CrosshairFilterEnts, ent )
-                end
+        LFSent.CrosshairFilterEnts = {}
+
+        for _, ent in pairs( constraint.GetAllConstrainedEntities( LFSent ) ) do
+            if IsValid( ent ) and not ent:GetNoDraw() then
+                table.insert( LFSent.CrosshairFilterEnts, ent )
             end
+        end
 
-            for _, Parent in pairs( LFSent.CrosshairFilterEnts ) do
-                local Childs = Parent:GetChildren()
-                for _, Child in pairs( Childs ) do
-                    if IsValid( Child ) then
-                        table.insert( LFSent.CrosshairFilterEnts, Child )
-                    end
+        for _, Parent in pairs( LFSent.CrosshairFilterEnts ) do
+            local Childs = Parent:GetChildren()
+            for _, Child in pairs( Childs ) do
+                if IsValid( Child ) then
+                    table.insert( LFSent.CrosshairFilterEnts, Child )
                 end
             end
         end
@@ -363,7 +366,7 @@ if SERVER then
             net.WriteEntity( LFSent )
             net.WriteTable( LFSent.CrosshairFilterEnts )
         net.Send( ply )
-    end)
+    end )
 
     net.Receive( "lfs_admin_setconvar", function( length, ply )
         if not IsValid( ply ) or not ply:IsSuperAdmin() then return end
