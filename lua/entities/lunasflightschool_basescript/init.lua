@@ -1539,15 +1539,32 @@ function ENT:Destroy()
 	end
 end
 
-function ENT:PhysicsCollide( data, physobj )
+local function VectorProjectOntoPlane( vector, planeNormal )
+	return vector - vector:Dot( planeNormal ) * planeNormal
+end
+
+function ENT:PhysicsCollide( data )
 	if self:IsDestroyed() then
 		self.MarkForDestruction = true
 	end
 
-	if IsValid( data.HitEntity ) then
-		if data.HitEntity:IsPlayer() or data.HitEntity:IsNPC() or simfphys.LFS.CollisionFilter[data.HitEntity:GetClass():lower()] then
-			return
+	if IsValid( data.HitEntity ) and data.HitEntity:IsPlayer() or data.HitEntity:IsNPC() or simfphys.LFS.CollisionFilter[data.HitEntity:GetClass():lower()] then
+		return
+	end
+
+	-- Check if the plane hits the skybox
+	if data.TheirSurfaceProps == 76 then
+		-- Bounce off the skybox and rotate
+		local physObj = self:GetPhysicsObject()
+		if IsValid( physObj ) then
+			local hitnormal = data.HitNormal
+			local newVel = VectorProjectOntoPlane( data.OurOldVelocity, hitnormal ) - hitnormal * 250
+
+			physObj:SetVelocityInstantaneous( newVel )
+			physObj:SetAngleVelocityInstantaneous( data.OurOldAngularVelocity )
 		end
+
+		return
 	end
 
 	if data.Speed > 60 and data.DeltaTime > 0.2 then
