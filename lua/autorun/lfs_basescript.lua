@@ -659,7 +659,7 @@ if CLIENT then
     local cvarShowRollIndic = CreateClientConVar( "lfs_show_rollindicator", 0, true, false)
     local cvarUnlockControls = CreateClientConVar( "lfs_hipster", 0, true, true)
     local cvarDisableQMENU = CreateClientConVar( "lfs_qmenudisable", 1, true, false)
-    local cvarHitMarker = CreateConVar( "lfs_hitmarker", 1, true, false)
+    local cvarHitMarker = CreateClientConVar( "lfs_hitmarker", 1, true, false)
 
     local ShowPlaneIdent = cvarShowPlaneIdent and cvarShowPlaneIdent:GetBool() or true
     local ShowShowRollIndic = cvarShowRollIndic and cvarShowRollIndic:GetBool() or false
