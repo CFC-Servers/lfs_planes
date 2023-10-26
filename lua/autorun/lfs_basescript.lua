@@ -36,6 +36,23 @@ function simfphys.LFS:AddKey(name, class, name_menu, default, cmd, IN_KEY)
     end
 end
 
+do
+    local conflictingAddons = {
+        ["3032439287"] = true
+    }
+
+    for _, addon in ipairs( engine.GetAddons() ) do
+        local wsid = addon.wsid
+        if conflictingAddons[wsid] then
+            if CLIENT then
+                chat.AddText( Color( 255, 0, 0 ), "[LFS] ", Color( 255, 255, 255 ), "You have a conflicting addon installed please uninstall ", Color( 255, 122, 0 ), "https://steamcommunity.com/sharedfiles/filedetails/?id=" .. wsid )
+            else
+                print( "[LFS] You have a conflicting addon installed please uninstall https://steamcommunity.com/sharedfiles/filedetails/?id=" .. wsid )
+            end
+        end
+    end
+end
+
 local DEFAULT_KEYS = {
     {name = "EXIT",			class = "misc",		name_menu = "Exit Vehicle",		default = KEY_J,		cmd = "cl_lfs_exit",					IN_KEY = 0},
     {name = "FREELOOK",		class = "misc",		name_menu = "Freelook (Hold)",	default = MOUSE_MIDDLE,	cmd = "cl_lfs_freelook",				IN_KEY = IN_WALK},
