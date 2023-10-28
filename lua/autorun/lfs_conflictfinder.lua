@@ -1,5 +1,6 @@
 local conflictingAddons = {
-    ["3032439287"] = true
+    ["3032439287"] = true, -- LFS "InDev" error spamming reupload
+    ["2966480781"] = true, -- LFS outdated reupload
 }
 
 timer.Simple( 60, function()
