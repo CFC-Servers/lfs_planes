@@ -9,7 +9,7 @@ ENT.Category = "[LFS]"
 ENT.Spawnable = true
 ENT.AdminSpawnable = false
 
-ENT.MDL = "models/blu/cessna.mdl"
+ENT.MDL = "models/blu/cessna_lfs.mdl"
 
 ENT.AITEAM = 0
 
