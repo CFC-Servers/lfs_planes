@@ -66,7 +66,7 @@ function TOOL.BuildCPanel( panel )
 	cbox:AddChoice( "2 - Friendly to team 2 and 0, hostile to everything else", 2 )
 	cbox:AddChoice( "3 - Hostile to everyone", 3 )
 
-	local npcchbox = panel:CheckBox( "Ignore NPCS", "lfsaienabler_ignorenpcs" )
-	local playerchbox = panel:CheckBox( "Ignore Players", "lfsaienabler_ignoreplayers" )
+	panel:CheckBox( "Ignore NPCS", "lfsaienabler_ignorenpcs" )
+	panel:CheckBox( "Ignore Players", "lfsaienabler_ignoreplayers" )
 
 end
