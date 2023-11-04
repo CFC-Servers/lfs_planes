@@ -32,7 +32,6 @@ function TOOL:RightClick( trace )
 
 	if isfunction( ent.SetAI ) then
 		ent:SetAI( false )
-
 	end
 
 	return true
