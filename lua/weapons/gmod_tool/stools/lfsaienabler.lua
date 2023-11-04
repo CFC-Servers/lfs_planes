@@ -4,6 +4,8 @@ TOOL.Name	 = "#AI Enabler"
 TOOL.Command = nil
 TOOL.ConfigName = ""
 TOOL.ClientConVar["aiteam"] = 0
+TOOL.ClientConVar["ignorenpcs"] = 0
+TOOL.ClientConVar["ignoreplayers"] = 0
 
 if CLIENT then
 	language.Add( "tool.lfsaienabler.name", "AI Enabler" )
@@ -20,6 +22,8 @@ function TOOL:LeftClick( trace )
 	if isfunction( ent.SetAI ) then
 		ent:SetAI( true )
 		ent:SetAITEAM( self:GetClientNumber( "aiteam" ) )
+		ent.IgnoreNpcsOverride = self:GetClientBool( "ignorenpcs" )
+		ent.IgnorePlayersOverride = self:GetClientBool( "ignoreplayers" )
 	end
 
 	return true
@@ -50,7 +54,7 @@ function TOOL:Think()
 	local ent = tr.Entity
 	if not IsValid( ent ) or not ent.LFS then return end
 
-	local text = "LFS Team: " .. tostring( ent:GetAITEAM() )
+	local text = "LFS Team: " .. tostring( ent:GetAITEAM() ) .. tostring(ent.IgnoreNpcsOverride)
 
 	AddWorldTip( ent:EntIndex(), text, SysTime() + 0.05, ent:GetPos(), ent )
 end
@@ -61,4 +65,8 @@ function TOOL.BuildCPanel( panel )
 	cbox:AddChoice( "1 - Friendly to team 1 and 0, hostile to everything else", 1 )
 	cbox:AddChoice( "2 - Friendly to team 2 and 0, hostile to everything else", 2 )
 	cbox:AddChoice( "3 - Hostile to everyone", 3 )
+
+	local npcchbox = panel:CheckBox( "Ignore NPCS", "lfsaienabler_ignorenpcs" )
+	local playerchbox = panel:CheckBox( "Ignore Players", "lfsaienabler_ignoreplayers" )
+
 end
