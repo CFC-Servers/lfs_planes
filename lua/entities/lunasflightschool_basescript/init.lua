@@ -1657,7 +1657,14 @@ function ENT:AIGetTarget()
 	local ClosestTarget = NULL
 	local TargetDistance = 60000
 
-	if not simfphys.LFS.IgnorePlayers then
+	local shouldIgnorePlayers = false
+	if self.IgnorePlayersOverride ~= nil then
+		shouldIgnorePlayers = self.IgnorePlayersOverride
+	else
+		shouldIgnorePlayers = simfphys.LFS.IgnorePlayers
+	end
+
+	if not shouldIgnorePlayers then
 		for _, v in pairs( players ) do
 			if IsValid( v ) then
 				if v:Alive() then
@@ -1692,7 +1699,14 @@ function ENT:AIGetTarget()
 		end
 	end
 
-	if not simfphys.LFS.IgnoreNPCs then
+	local shouldIgnoreNpcs = false
+	if self.IgnoreNpcsOverride ~= nil then
+		shouldIgnoreNpcs = self.IgnoreNpcsOverride
+	else
+		shouldIgnoreNpcs = simfphys.LFS.IgnoreNPCs
+	end
+
+	if not shouldIgnoreNpcs then
 		for _, v in pairs( self:AIGetNPCTargets() ) do
 			if IsValid( v ) then
 				local HisTeam = self:AIGetNPCRelationship( v:GetClass() )
