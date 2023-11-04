@@ -50,7 +50,7 @@ function TOOL:Think()
 	local ent = tr.Entity
 	if not IsValid( ent ) or not ent.LFS then return end
 
-	local Text = "LFS Team:"..tostring(ent:GetAITEAM())
+	local Text = "LFS Team: "..tostring(ent:GetAITEAM())
 
 	AddWorldTip( ent:EntIndex(), Text, SysTime() + 0.05, ent:GetPos(), ent )
 end
