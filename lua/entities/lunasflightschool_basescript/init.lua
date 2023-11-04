@@ -1701,9 +1701,9 @@ function ENT:AIGetTarget()
 
 	local shouldIgnoreNpcs = false
 	if self.IgnoreNpcsOverride ~= nil then
-    	shouldIgnoreNpcs = self.IgnoreNpcsOverride
+		shouldIgnoreNpcs = self.IgnoreNpcsOverride
 	else
-    	shouldIgnoreNpcs = simfphys.LFS.IgnoreNPCs
+		shouldIgnoreNpcs = simfphys.LFS.IgnoreNPCs
 	end
 
 	if not shouldIgnoreNpcs then
