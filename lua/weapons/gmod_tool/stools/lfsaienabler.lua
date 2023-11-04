@@ -37,7 +37,7 @@ function TOOL:RightClick( trace )
 	return true
 end
 
-function TOOL:Reload( trace )
+function TOOL:Reload()
 	return false
 end
 
@@ -50,13 +50,12 @@ function TOOL:Think()
 	local ent = tr.Entity
 	if not IsValid( ent ) or not ent.LFS then return end
 
-	local Text = "LFS Team: "..tostring(ent:GetAITEAM())
+	local text = "LFS Team: "..tostring(ent:GetAITEAM())
 
-	AddWorldTip( ent:EntIndex(), Text, SysTime() + 0.05, ent:GetPos(), ent )
+	AddWorldTip( ent:EntIndex(), text, SysTime() + 0.05, ent:GetPos(), ent )
 end
 
 function TOOL.BuildCPanel( panel )
-
 	local cbox = panel:ComboBox( "AI Team", "lfsaienabler_aiteam" )
 	cbox:AddChoice( "0 - Friendly to everyone", 0 )
 	cbox:AddChoice( "1 - Friendly to team 1 and 0, hostile to everything else", 1 )
