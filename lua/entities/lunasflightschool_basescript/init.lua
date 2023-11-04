@@ -1699,14 +1699,14 @@ function ENT:AIGetTarget()
 		end
 	end
 
-	local shouldTargetNpcs = false
+	local shouldIgnoreNpcs = false
 	if self.IgnoreNpcsOverride ~= nil then
-    	shouldTargetNpcs = self.IgnoreNpcsOverride
+    	shouldIgnoreNpcs = self.IgnoreNpcsOverride
 	else
-    	shouldTargetNpcs = simfphys.LFS.IgnoreNPCs
+    	shouldIgnoreNpcs = simfphys.LFS.IgnoreNPCs
 	end
 
-	if not shouldTargetNpcs then
+	if not shouldIgnoreNpcs then
 		for _, v in pairs( self:AIGetNPCTargets() ) do
 			if IsValid( v ) then
 				local HisTeam = self:AIGetNPCRelationship( v:GetClass() )
