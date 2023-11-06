@@ -21,7 +21,7 @@ local conflictingAddons = {
 local timer_Simple = timer.Simple
 local engine_GetAddons = engine.GetAddons
 local ipairs = ipairs
-local chat_AddText = chat.AddText
+local chat_AddText = CLIENT and chat.AddText
 local print = print
 
 local colorRed = Color( 255, 0, 0 )
