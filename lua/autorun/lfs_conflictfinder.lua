@@ -1,7 +1,6 @@
 local conflictingAddons = {
     ["3032439287"] = true, -- LFS "InDev" error spamming reupload
     ["2966480781"] = true, -- LFS outdated reupload
-    ["2608784717"] = true, -- LFS reupload, spams errors
     ["3032130287"] = true, -- LFS reupload
     ["2973559699"] = true, -- Reupload
     ["3026434172"] = true, -- Reupload
