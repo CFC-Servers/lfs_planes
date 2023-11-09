@@ -16,7 +16,7 @@ local conflictingAddons = {
     ["2888564559"] = true, -- Simfphys and LFS reupload
     ["2984271396"] = true, -- Reupload
 
-    -- Found using https://gmod-archive.cheetah.cat/#/file_relations/
+    -- Found using https://gmod-archive.cheetah.cat/#/file_relations/ thanks to @cheetahdotcat
     -- Reuploads of lfs_basescript.lua and other crucial lfs files
     ["2829073644"] = true,
     ["2069109534"] = true,
