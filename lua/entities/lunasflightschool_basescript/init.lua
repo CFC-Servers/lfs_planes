@@ -874,6 +874,10 @@ function ENT:SetPassenger( ply )
 			ply:EnterVehicle( Seat )
 		else
 			if not IsValid( self:GetDriver() ) and not AI then
+				if not IsValid( DriverSeat ) then
+					print( "[LFS] ERROR: DriverSeat is invalid! Ent: " .. tostring( self ) .. " Class: " .. self:GetClass() )
+					return
+				end
 				ply:EnterVehicle( DriverSeat )
 			end
 		end
