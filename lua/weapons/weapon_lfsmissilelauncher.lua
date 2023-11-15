@@ -44,6 +44,7 @@ function SWEP:Initialize()
 end
 
 local lfsRpgLockTime = CreateConVar( "lfs_rpglocktime", 3, FCVAR_ARCHIVE )
+local lfsRpgLockAngle = CreateConVar( "lfs_rpglockangle", 15, FCVAR_ARCHIVE )
 
 function SWEP:Think()
 	if CLIENT then return end
@@ -134,7 +135,7 @@ function SWEP:Think()
 			local toEnt = sub:GetNormalized()
 			local Ang = math.acos( math.Clamp( AimForward:Dot( toEnt ), -1, 1 ) ) * ( 180 / math.pi )
 
-			if Ang >= 30 or not self:CanSee( vehicle, Owner ) then continue end
+			if Ang >= lfsRpgLockAngle:GetInt() or not self:CanSee( vehicle, Owner ) then continue end
 
 			table.insert( Vehicles, vehicle )
 
