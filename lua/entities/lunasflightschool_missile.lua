@@ -13,7 +13,11 @@ function ENT:SetupDataTables()
 end
 
 if SERVER then
-	function ENT:SpawnFunction( ply, tr, ClassName )
+
+	local lfsRpgDmgMulCvar = CreateConVar( "lfs_missiledamagemul", 1, FCVAR_ARCHIVE )
+	local lfsRpgMobilityMul = CreateConVar( "lfs_missilemobilitymul", 1, FCVAR_ARCHIVE )
+
+	function ENT:SpawnFunction( _, tr, ClassName )
 
 		if not tr.Hit then return end
 
@@ -32,41 +36,71 @@ if SERVER then
 		local pObj = self:GetPhysicsObject()
 
 		if IsValid( pObj ) then
-			pObj:SetVelocityInstantaneous( self:GetForward() * (self:GetStartVelocity() + 3000) )
+			pObj:SetVelocityInstantaneous( self:GetForward() * ( self:GetStartVelocity() + 3000 ) )
+			pObj:SetAngleVelocity( pObj:GetAngleVelocity() * 0.995 ) -- slowly spiral out of a turn
 		end
 	end
 
 	function ENT:FollowTarget( followent )
-		local speed = self:GetStartVelocity() + (self:GetDirtyMissile() and 5000 or 3500)
-		local turnrate = (self:GetCleanMissile() or self:GetDirtyMissile()) and 60 or 50
 
-		local TargetPos = followent:LocalToWorld( followent:OBBCenter() )
+		-- increase turnrate the longer missile is alive, bear down on far targets.
+		-- goal is to punish pilots/drivers who camp far away from players.
+		local timeAlive = math.abs( self:GetCreationTime() - CurTime() )
+		local turnrateAdd = math.Clamp( timeAlive * 75, 0, 500 ) * lfsRpgMobilityMul:GetFloat()
+		local speedAdd = math.Clamp( timeAlive * 400, 0, 5000 ) * lfsRpgMobilityMul:GetFloat()
+
+		local speed = self:GetStartVelocity() + ( self:GetDirtyMissile() and 4000 or 2500 )
+		speed = speed + speedAdd
+
+		local turnrate = ( self:GetCleanMissile() or self:GetDirtyMissile() ) and 30 or 20
+		turnrate = turnrate + turnrateAdd
+
+		local TargetPos
+		local followsPhysObj = followent:GetPhysicsObject()
 
 		if isfunction( followent.GetMissileOffset ) then
 			local Value = followent:GetMissileOffset()
 			if isvector( Value ) then
 				TargetPos = followent:LocalToWorld( Value )
 			end
+		elseif IsValid( followsPhysObj ) then
+			TargetPos = followent:LocalToWorld( followsPhysObj:GetMassCenter() )
+		else
+			TargetPos = followent:WorldSpaceCenter()
+
 		end
 
-		local pos = TargetPos + followent:GetVelocity() * 0.25
+		local pos = TargetPos + followent:GetVelocity() * 0.15
 
 		local pObj = self:GetPhysicsObject()
 
-		if IsValid( pObj ) then
-			if not self:GetDisabled() then
-				local targetdir = (pos - self:GetPos()):GetNormalized()
+		if IsValid( pObj ) and not self:GetDisabled() then
+			local subtractionProduct = pos - self:GetPos()
+			local targetdir = subtractionProduct:GetNormalized()
 
-				local AF = self:WorldToLocalAngles( targetdir:Angle() )
-				AF.p = math.Clamp( AF.p * 400,-turnrate,turnrate )
-				AF.y = math.Clamp( AF.y * 400,-turnrate,turnrate )
-				AF.r = math.Clamp( AF.r * 400,-turnrate,turnrate )
+			local AF = self:WorldToLocalAngles( targetdir:Angle() )
+			local badAngles = AF.p > 110 or AF.y > 110
 
-				local AVel = pObj:GetAngleVelocity()
-				pObj:AddAngleVelocity( Vector(AF.r,AF.p,AF.y) - AVel )
+			-- target is cheating! they're no collided!
+			-- if you want to make a plane/vehicle not get targeted by LFS missilelauncher then see LFS.RPGBlockLockon hook, in the launcher
+			if subtractionProduct:LengthSqr() < 75^2 then
+				self:HitEntity( followent )
+				return
+			-- target escaped!
+			elseif badAngles then
+				self:SetLockOn( nil )
+				return
 
-				pObj:SetVelocityInstantaneous( self:GetForward() * speed )
 			end
+
+			AF.p = math.Clamp( AF.p * 400,-turnrate,turnrate )
+			AF.y = math.Clamp( AF.y * 400,-turnrate,turnrate )
+			AF.r = math.Clamp( AF.r * 400,-turnrate,turnrate )
+
+			local AVel = pObj:GetAngleVelocity()
+			pObj:AddAngleVelocity( Vector( AF.r,AF.p,AF.y ) - AVel )
+
+			pObj:SetVelocityInstantaneous( self:GetForward() * speed )
 		end
 	end
 
@@ -103,25 +137,23 @@ if SERVER then
 		end
 
 		if self.Explode then
+			local FallbackDamager = Entity( 0 )
 			local Inflictor = self:GetInflictor()
+			Inflictor = IsValid( Inflictor ) and Inflictor or FallbackDamager
 			local Attacker = self:GetAttacker()
+			Attacker = IsValid( Attacker ) and Attacker or FallbackDamager
 
-			util.BlastDamage( IsValid( Inflictor ) and Inflictor or Entity(0), IsValid( Attacker ) and Attacker or Entity(0), self:GetPos(),250,100)
+			util.BlastDamage( Inflictor, Attacker, self:GetPos(), 250, 100 * lfsRpgDmgMulCvar:GetFloat() )
 
 			self:Detonate()
 		end
 
-		if (self.SpawnTime + 12) < curtime then
+		if ( self.SpawnTime + 12 ) < curtime then
 			self:Detonate()
 		end
 
 		return true
 	end
-
-	local IsThisSimfphys = {
-		["gmod_sent_vehicle_fphysics_base"] = true,
-		["gmod_sent_vehicle_fphysics_wheel"] = true,
-	}
 
 	function ENT:PhysicsCollide( data )
 		if self:GetDisabled() then
@@ -129,54 +161,35 @@ if SERVER then
 		else
 			local HitEnt = data.HitEntity
 
-			if IsValid( HitEnt ) and not self.Explode then
-				local Class = HitEnt:GetClass():lower()
+			self:HitEntity( HitEnt )
+		end
+	end
 
-				if IsThisSimfphys[Class] then
-					local Pos = self:GetPos()
-
-					if Class == "gmod_sent_vehicle_fphysics_wheel" then
-						HitEnt = HitEnt:GetBaseEnt()
-					end
-
-					local effectdata = EffectData()
-						effectdata:SetOrigin( Pos )
-						effectdata:SetNormal( -self:GetForward() )
-					util.Effect( "manhacksparks", effectdata, true, true )
-
-					local dmginfo = DamageInfo()
-						dmginfo:SetDamage( 1000 )
-						dmginfo:SetAttacker( IsValid( self:GetAttacker() ) and self:GetAttacker() or self )
-						dmginfo:SetDamageType( DMG_DIRECT )
-						dmginfo:SetInflictor( self )
-						dmginfo:SetDamagePosition( Pos )
-					HitEnt:TakeDamageInfo( dmginfo )
-
-					sound.Play( "Missile.ShotDown", Pos, 140)
-				end
-
-				if HitEnt.LFS or HitEnt.IdentifiesAsLFS then
-					local Pos = self:GetPos()
-
-					local effectdata = EffectData()
-						effectdata:SetOrigin( Pos )
-						effectdata:SetNormal( -self:GetForward() )
-					util.Effect( "manhacksparks", effectdata, true, true )
-
-					local dmginfo = DamageInfo()
-						dmginfo:SetDamage( 400 )
-						dmginfo:SetAttacker( IsValid( self:GetAttacker() ) and self:GetAttacker() or self )
-						dmginfo:SetDamageType( DMG_DIRECT )
-						dmginfo:SetInflictor( self )
-						dmginfo:SetDamagePosition( Pos )
-					HitEnt:TakeDamageInfo( dmginfo )
-
-					sound.Play( "Missile.ShotDown", Pos, 140)
-				end
+	function ENT:HitEntity( HitEnt )
+		if IsValid( HitEnt ) and not self.Explode then
+			local Pos = self:GetPos()
+			if HitEnt.GetBaseEnt and IsValid( HitEnt:GetBaseEnt() ) then
+				HitEnt = HitEnt:GetBaseEnt()
 			end
 
-			self.Explode = true
+			local effectdata = EffectData()
+				effectdata:SetOrigin( Pos )
+				effectdata:SetNormal( -self:GetForward() )
+			util.Effect( "manhacksparks", effectdata, true, true )
+
+			local dmginfo = DamageInfo()
+				dmginfo:SetDamage( 600 * lfsRpgDmgMulCvar:GetFloat() )
+				dmginfo:SetAttacker( IsValid( self:GetAttacker() ) and self:GetAttacker() or self )
+				dmginfo:SetDamageType( DMG_DIRECT )
+				dmginfo:SetInflictor( self )
+				dmginfo:SetDamagePosition( Pos )
+			HitEnt:TakeDamageInfo( dmginfo )
+
+			sound.Play( "Missile.ShotDown", Pos, 140 )
+
 		end
+
+		self.Explode = true
 	end
 
 	function ENT:BreakMissile()
@@ -210,7 +223,7 @@ if SERVER then
 	end
 else
 	function ENT:Initialize()
-		self.snd = CreateSound(self, "weapons/flaregun/burn.wav")
+		self.snd = CreateSound( self, "weapons/flaregun/burn.wav" )
 		self.snd:Play()
 
 		local effectdata = EffectData()

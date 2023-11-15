@@ -1,34 +1,32 @@
 AddCSLuaFile()
 
-SWEP.Category	 = "Other"
-SWEP.PrintName = "[LFS] Missile Launcher"
-SWEP.Author	 = "Luna"
-SWEP.Slot		 = 4
-SWEP.SlotPos	 = 9
-SWEP.DrawWeaponInfoBox = false
-SWEP.BounceWeaponIcon = false
+SWEP.Category			= "Other"
+SWEP.PrintName			= "[LFS] Missile Launcher"
+SWEP.Author				= "Luna"
+SWEP.Slot				= 4
+SWEP.SlotPos			= 9
 
-SWEP.Spawnable = true
-SWEP.AdminSpawnable = false
-SWEP.ViewModel = "models/weapons/c_rpg.mdl"
-SWEP.WorldModel = "models/weapons/w_rocket_launcher.mdl"
-SWEP.UseHands	 = true
-SWEP.ViewModelFlip = false
-SWEP.ViewModelFOV = 53
-SWEP.Weight 	 = 42
-SWEP.AutoSwitchTo = true
-SWEP.AutoSwitchFrom = true
-SWEP.HoldType	 = "rpg"
+SWEP.Spawnable			= true
+SWEP.AdminSpawnable		= false
+SWEP.ViewModel			= "models/weapons/c_rpg.mdl"
+SWEP.WorldModel			= "models/weapons/w_rocket_launcher.mdl"
+SWEP.UseHands			= true
+SWEP.ViewModelFlip		= false
+SWEP.ViewModelFOV		= 53
+SWEP.Weight 			= 42
+SWEP.AutoSwitchTo 		= true
+SWEP.AutoSwitchFrom		= true
+SWEP.HoldType			= "rpg"
 
-SWEP.Primary.ClipSize = 1
-SWEP.Primary.DefaultClip = 8
-SWEP.Primary.Automatic = false
-SWEP.Primary.Ammo = "RPG_Round"
+SWEP.Primary.ClipSize		= 1
+SWEP.Primary.DefaultClip	= 8
+SWEP.Primary.Automatic		= false
+SWEP.Primary.Ammo1			= "RPG_Round"
 
-SWEP.Secondary.ClipSize = -1
-SWEP.Secondary.DefaultClip = -1
-SWEP.Secondary.Automatic = false
-SWEP.Secondary.Ammo = "none"
+SWEP.Secondary.ClipSize		= -1
+SWEP.Secondary.DefaultClip	= -1
+SWEP.Secondary.Automatic	= false
+SWEP.Secondary.Ammo			= "none"
 
 function SWEP:SetupDataTables()
 	self:NetworkVar( "Entity",0, "ClosestEnt" )
@@ -36,24 +34,28 @@ function SWEP:SetupDataTables()
 	self:NetworkVar( "Bool",0, "IsLocked" )
 end
 
-function SWEP:DrawWeaponSelection( x, y, wide, tall, alpha )
-	draw.SimpleText( "i", "WeaponIcons", x + wide/2, y + tall*0.2, Color( 255, 210, 0, 255 ), TEXT_ALIGN_CENTER )
+local wepIconColor = Color( 255, 210, 0, 255 )
+function SWEP:DrawWeaponSelection( x, y, wide, tall, _ )
+	draw.SimpleText( "i", "WeaponIcons", x + wide / 2, y + tall * 0.2, wepIconColor, TEXT_ALIGN_CENTER )
 end
 
 function SWEP:Initialize()
-	self.Weapon:SetHoldType( self.HoldType )
+	self:SetHoldType( self.HoldType )
 end
+
+local lfsRpgLockTime = CreateConVar( "lfs_rpglocktime", 3, FCVAR_ARCHIVE )
 
 function SWEP:Think()
 	if CLIENT then return end
 
-	self.guided_nextThink = self.guided_nextThink or 0
+	self.nextSortTargets = self.nextSortTargets or 0
 	self.FindTime = self.FindTime or 0
 	self.nextFind = self.nextFind or 0
 
 	local curtime = CurTime()
+	local Owner = self:GetOwner()
 
-	if self.FindTime + 3 < curtime and IsValid( self:GetClosestEnt() ) then
+	if self.FindTime + lfsRpgLockTime:GetFloat() < curtime and IsValid( self:GetClosestEnt() ) then
 		self.Locked = true
 	else
 		self.Locked = false
@@ -63,7 +65,7 @@ function SWEP:Think()
 		self:SetIsLocked( self.Locked )
 
 		if self.Locked then
-			self.LockSND = CreateSound(self.Owner, "lfs/radar_lock.wav")
+			self.LockSND = CreateSound( Owner, "lfs/radar_lock.wav" )
 			self.LockSND:PlayEx( 0.5, 100 )
 
 			if self.TrackSND then
@@ -82,60 +84,69 @@ function SWEP:Think()
 		self.nextFind = curtime + 3
 		self.FoundVehicles = {}
 
-		for k, v in pairs( simfphys.LFS:PlanesGetAll() ) do
-			if v.LFS then
-				table.insert( self.FoundVehicles, v )
+		for _, vehicle in pairs( simfphys.LFS:PlanesGetAll() ) do
+			if vehicle.LFS then
+				table.insert( self.FoundVehicles, vehicle )
 			end
 		end
 
-		for k, v in pairs( ents.FindByClass( "wac_hc*" ) ) do
-			table.insert( self.FoundVehicles, v )
+		for _, vehicle in pairs( ents.FindByClass( "wac_hc*" ) ) do
+			table.insert( self.FoundVehicles, vehicle )
 		end
 
-		for k, v in pairs( ents.FindByClass( "wac_pl*" ) ) do
-			table.insert( self.FoundVehicles, v )
+		for _, vehicle in pairs( ents.FindByClass( "wac_pl*" ) ) do
+			table.insert( self.FoundVehicles, vehicle )
+		end
+
+		for _, vehicle in ipairs( ents.FindByClass( "prop_vehicle_*" ) ) do
+			if IsValid( vehicle:GetDriver() ) then
+				table.insert( self.FoundVehicles, vehicle )
+			end
 		end
 	end
 
-	if self.guided_nextThink < curtime then
-		self.guided_nextThink = curtime + 0.25
+	if self:Clip1() <= 0 then
+		self:SetClosestEnt( nil )
+		if self.TrackSND then
+			self.TrackSND:Stop()
+			self.TrackSND = nil
+		end
+
+	elseif self.nextSortTargets < curtime then
+		self.nextSortTargets = curtime + 0.25
 		self.FoundVehicles = self.FoundVehicles or {}
 
-		local AimForward = self.Owner:GetAimVector()
-		local startpos = self.Owner:GetShootPos()
+		local AimForward = Owner:GetAimVector()
+		local startpos = Owner:GetShootPos()
 
 		local Vehicles = {}
 		local ClosestEnt = NULL
-		local ClosestDist = 0
+		local ClosestDist = math.huge
+		local SmallestAng = math.huge
 
-		for k, v in pairs( self.FoundVehicles  ) do
-			if IsValid( v ) then
-				local sub = (v:GetPos() - startpos)
-				local toEnt = sub:GetNormalized()
-				local dist = sub:Length()
-				local Ang = math.acos( math.Clamp( AimForward:Dot( toEnt ) ,-1,1) ) * (180 / math.pi)
+		for index, vehicle in pairs( self.FoundVehicles ) do
+			if not IsValid( vehicle ) then self.FoundVehicles[ index ] = nil continue end
 
-				if Ang < 30 and dist < 7500 and self:CanSee( v ) then
-					table.insert( Vehicles, v )
+			local hookResult = hook.Run( "LFS.RPGBlockLockon", self, vehicle )
+			if hookResult == true then self.FoundVehicles[ index ] = nil continue end
 
-					local stuff = WorldToLocal( v:GetPos(), Angle(0,0,0), startpos, self.Owner:EyeAngles() + Angle(90,0,0) )
-					stuff.z = 0
-					local dist = stuff:Length()
+			local sub = ( vehicle:GetPos() - startpos )
+			local toEnt = sub:GetNormalized()
+			local Ang = math.acos( math.Clamp( AimForward:Dot( toEnt ), -1, 1 ) ) * ( 180 / math.pi )
 
-					if not IsValid( ClosestEnt ) then
-						ClosestEnt = v
-						ClosestDist = dist
-					end
+			if Ang >= 30 or not self:CanSee( vehicle, Owner ) then continue end
 
-					if dist < ClosestDist then
-						ClosestDist = dist
-						if ClosestEnt ~= v then
-							ClosestEnt = v
-						end
-					end
+			table.insert( Vehicles, vehicle )
+
+			local stuff = WorldToLocal( vehicle:GetPos(), Angle( 0, 0, 0 ), startpos, Owner:EyeAngles() + Angle(90,0,0) )
+			local dist = stuff:Length()
+
+			if dist < ClosestDist and Ang < SmallestAng then
+				ClosestDist = dist
+				SmallestAng = Ang
+				if ClosestEnt ~= vehicle then
+					ClosestEnt = vehicle
 				end
-			else
-				self.FoundVehicles[k] = nil
 			end
 		end
 
@@ -146,67 +157,69 @@ function SWEP:Think()
 			self.FindTime = curtime
 
 			if IsValid( ClosestEnt ) then
-				self.TrackSND = CreateSound(self.Owner, "lfs/radar_track.wav")
+				self.TrackSND = CreateSound( Owner, "lfs/radar_track.wav" )
 				self.TrackSND:PlayEx( 0, 100 )
 				self.TrackSND:ChangeVolume( 0.5, 2 )
-			else
-				if self.TrackSND then
-					self.TrackSND:Stop()
-					self.TrackSND = nil
-				end
-			end
-		end
-
-		if not IsValid( ClosestEnt ) then
-			if self.TrackSND then
+			elseif self.TrackSND then
 				self.TrackSND:Stop()
 				self.TrackSND = nil
 			end
 		end
+
+		if not IsValid( ClosestEnt ) and self.TrackSND then
+			self.TrackSND:Stop()
+			self.TrackSND = nil
+		end
 	end
 end
 
-function SWEP:CanSee( entity )
+function SWEP:CanSee( entity, owner )
 	local pos = entity:GetPos()
 
-	local tr = util.TraceLine( {
-		start = self.Owner:GetShootPos(),
+	owner = owner or self:GetOwner()
+
+	local trStruc = {
+		start = owner:GetShootPos(),
 		endpos = pos,
-		filter = function( ent )
-			if ent == self.Owner then
-				return false
-			end
+		filter = owner,
+	}
 
-			return true
-		end
-
-	} )
-	return (tr.HitPos - pos):Length() < 500
+	local trResult = util.TraceLine( trStruc )
+	return ( trResult.HitPos - pos ):Length() < 500
 end
 
 function SWEP:PrimaryAttack()
 	if not self:CanPrimaryAttack() then return end
-	self.Weapon:SetNextPrimaryFire( CurTime() + 0.5 )
 
+	self:SetNextPrimaryFire( CurTime() + 0.5 )
 	self:TakePrimaryAmmo( 1 )
 
-	self.Owner:ViewPunch( Angle( -10, -5, 0 ) )
+	timer.Simple( 0, function()
+		if not IsValid( self ) then return end
+		if not SERVER then return end
+		self:Reload()
+
+	end )
+
+	local Owner = self:GetOwner()
+
+	Owner:ViewPunch( Angle( -10, -5, 0 ) )
 
 	if CLIENT then return end
 
-	self.Owner:EmitSound("Weapon_RPG.NPC_Single")
+	Owner:EmitSound( "Weapon_RPG.NPC_Single" )
 
-	local startpos = self.Owner:GetShootPos() + self.Owner:EyeAngles():Right() * 10
+	local startpos = Owner:GetShootPos() + Owner:EyeAngles():Right() * 10
 	local ent = ents.Create( "lunasflightschool_missile" )
 	ent:SetPos( startpos )
-	ent:SetAngles( (self.Owner:GetEyeTrace().HitPos - startpos):Angle() )
-	ent:SetOwner( self.Owner )
-	ent.Attacker = self.Owner
+	ent:SetAngles( ( Owner:GetEyeTrace().HitPos - startpos ):Angle() )
+	ent:SetOwner( Owner )
+	ent.Attacker = Owner
 	ent:Spawn()
 	ent:Activate()
 
-	ent:SetAttacker( self.Owner )
-	ent:SetInflictor( self.Owner:GetActiveWeapon() )
+	ent:SetAttacker( Owner )
+	ent:SetInflictor( Owner:GetActiveWeapon() )
 
 	local LockOnTarget = self:GetClosestEnt()
 
@@ -220,23 +233,14 @@ function SWEP:SecondaryAttack()
 end
 
 function SWEP:Deploy()
-	self.Weapon:SendWeaponAnim( ACT_VM_DRAW )
+	self:SendWeaponAnim( ACT_VM_DRAW )
 	return true
 end
 
 function SWEP:Reload()
-	if self:Clip1() < self.Primary.ClipSize and self.Owner:GetAmmoCount( self.Primary.Ammo ) > 0 then
-
-		self.Weapon:DefaultReload( ACT_VM_RELOAD )
+	if self:Clip1() < self.Primary.ClipSize and self:GetOwner():GetAmmoCount( self.Primary.Ammo ) > 0 then
+		self:DefaultReload( ACT_VM_RELOAD )
 		self:UnLock()
-	end
-end
-
-local function DrawCircle( X, Y, radius )
-	local segmentdist = 360 / ( 2 * math.pi * radius / 2 )
-
-	for a = 0, 360 - segmentdist, segmentdist do
-		surface.DrawLine( X + math.cos( math.rad( a ) ) * radius, Y - math.sin( math.rad( a ) ) * radius, X + math.cos( math.rad( a + segmentdist ) ) * radius, Y - math.sin( math.rad( a + segmentdist ) ) * radius )
 	end
 end
 
@@ -285,36 +289,30 @@ local function PaintPlaneIdentifier( ply )
 	local MyTeam = ply:lfsGetAITeam()
 	local startpos = ply:GetShootPos()
 
-	for _, v in pairs( AllPlanes ) do
-		if IsValid( v ) then
-			local rPos = v:LocalToWorld( v:OBBCenter() )
+	for _, vehicle in pairs( AllPlanes ) do
+		if not IsValid( vehicle ) then continue end
 
-			local Pos = rPos:ToScreen()
-			local Dist = (MyPos - rPos):Length()
+		local rPos = vehicle:LocalToWorld( vehicle:OBBCenter() )
 
-			if Dist < 13000 then
-				if not util.TraceLine( {start = startpos,endpos = rPos,mask = MASK_NPCWORLDSTATIC,} ).Hit then
+		local Pos = rPos:ToScreen()
+		local Dist = ( MyPos - rPos ):Length()
+		if util.TraceLine( { start = startpos,endpos = rPos,mask = MASK_NPCWORLDSTATIC } ).Hit then continue end
 
-					local Alpha = math.max(255 - Dist * 0.015,0)
-					local Team = v:GetAITEAM()
-					local IndicatorColor = Color( 255, 0, 0, Alpha )
+		local Alpha = math.max( 255 - Dist * 0.015, 0 )
+		local Team = vehicle:GetAITEAM()
+		local IndicatorColor = Color( 255, 0, 0, Alpha )
 
-					if Team == 0 then
-						IndicatorColor = Color( 0, 255, 0, Alpha )
-					else
-						if Team == 1 or Team == 2 then
-							if Team ~= MyTeam and MyTeam ~= 0 then
-								IndicatorColor = Color( 255, 0, 0, Alpha )
-							else
-								IndicatorColor = Color( 0, 127, 255, Alpha )
-							end
-						end
-					end
-
-					simfphys.LFS.HudPaintPlaneIdentifier( Pos.x, Pos.y, IndicatorColor, v )
-				end
+		if Team == 0 then
+			IndicatorColor = Color( 0, 255, 0, Alpha )
+		elseif Team == 1 or Team == 2 then
+			if Team ~= MyTeam and MyTeam ~= 0 then
+				IndicatorColor = Color( 255, 0, 0, Alpha )
+			else
+				IndicatorColor = Color( 0, 127, 255, Alpha )
 			end
 		end
+
+		simfphys.LFS.HudPaintPlaneIdentifier( Pos.x, Pos.y, IndicatorColor, vehicle )
 	end
 end
 
@@ -329,7 +327,6 @@ function SWEP:DrawHUD()
 
 	if not IsValid( ent ) then return end
 
-	local dist = (ent:GetPos() - ply:GetPos()):Length() / 500
 	local pos = ent:LocalToWorld( ent:OBBCenter() )
 
 	local scr = pos:ToScreen()
