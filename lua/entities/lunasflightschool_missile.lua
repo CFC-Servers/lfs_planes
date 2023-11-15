@@ -75,15 +75,23 @@ if SERVER then
 		local pObj = self:GetPhysicsObject()
 
 		if IsValid( pObj ) and not self:GetDisabled() then
-			local subtractionProduct = pos - self:GetPos()
+			local myPos = self:GetPos()
+			local subtractionProduct = pos - myPos
+			local distToTargSqr = subtractionProduct:LengthSqr()
 			local targetdir = subtractionProduct:GetNormalized()
 
 			local AF = self:WorldToLocalAngles( targetdir:Angle() )
 			local badAngles = AF.p > 110 or AF.y > 110
 
+			if distToTargSqr < 500^2 then
+				local trRes = util.QuickTrace( myPos, self:GetForward() * 20, self )
+				if trRes.Hit then
+					self:HitEntity( trRes.Entity )
+
+				end
 			-- target is cheating! they're no collided!
 			-- if you want to make a plane/vehicle not get targeted by LFS missilelauncher then see LFS.RPGBlockLockon hook, in the launcher
-			if subtractionProduct:LengthSqr() < 75^2 then
+			elseif distToTargSqr < 75^2 then
 				self:HitEntity( followent )
 				return
 			-- target escaped!
