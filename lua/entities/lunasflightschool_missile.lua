@@ -33,6 +33,8 @@ if SERVER then
 	function ENT:BlindFire()
 		if self:GetDisabled() then return end
 
+		self:DoHitTrace()
+
 		local pObj = self:GetPhysicsObject()
 
 		if IsValid( pObj ) then
@@ -84,11 +86,7 @@ if SERVER then
 			local badAngles = AF.p > 110 or AF.y > 110
 
 			if distToTargSqr < 500^2 then
-				local trRes = util.QuickTrace( myPos, self:GetForward() * 20, self )
-				if trRes.Hit then
-					self:HitEntity( trRes.Entity )
-
-				end
+				self:DoHitTrace()
 			-- target is cheating! they're no collided!
 			-- if you want to make a plane/vehicle not get targeted by LFS missilelauncher then see LFS.RPGBlockLockon hook, in the launcher
 			elseif distToTargSqr < 75^2 then
@@ -170,6 +168,14 @@ if SERVER then
 			local HitEnt = data.HitEntity
 
 			self:HitEntity( HitEnt )
+		end
+	end
+
+	function ENT:DoHitTrace()
+		local trRes = util.QuickTrace( self:GetPos(), self:GetForward() * 20, self )
+		if trRes.Hit then
+			self:HitEntity( trRes.Entity )
+
 		end
 	end
 
