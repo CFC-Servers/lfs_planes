@@ -137,22 +137,6 @@ if SERVER then
 			self:BlindFire()
 		end
 
-		if self.MarkForRemove then
-			self:Detonate()
-		end
-
-		if self.Explode then
-			local FallbackDamager = Entity( 0 )
-			local Inflictor = self:GetInflictor()
-			Inflictor = IsValid( Inflictor ) and Inflictor or FallbackDamager
-			local Attacker = self:GetAttacker()
-			Attacker = IsValid( Attacker ) and Attacker or FallbackDamager
-
-			util.BlastDamage( Inflictor, Attacker, self:GetPos(), 250, 100 * lfsRpgDmgMulCvar:GetFloat() )
-
-			self:Detonate()
-		end
-
 		if ( self.SpawnTime + 12 ) < curtime then
 			self:Detonate()
 		end
@@ -162,7 +146,7 @@ if SERVER then
 
 	function ENT:PhysicsCollide( data )
 		if self:GetDisabled() then
-			self.MarkForRemove = true
+			self:Detonate()
 		else
 			local HitEnt = data.HitEntity
 
@@ -193,7 +177,7 @@ if SERVER then
 	end
 
 	function ENT:HitEntity( HitEnt )
-		if IsValid( HitEnt ) and not self.Explode then
+		if IsValid( HitEnt ) then
 			local Pos = self:GetPos()
 			if HitEnt.GetBaseEnt and IsValid( HitEnt:GetBaseEnt() ) then
 				HitEnt = HitEnt:GetBaseEnt()
@@ -216,7 +200,7 @@ if SERVER then
 
 		end
 
-		self.Explode = true
+		self:Detonate()
 	end
 
 	function ENT:BreakMissile()
@@ -234,6 +218,15 @@ if SERVER then
 	end
 
 	function ENT:Detonate()
+		local FallbackDamager = Entity( 0 )
+		local Inflictor = self:GetInflictor()
+		Inflictor = IsValid( Inflictor ) and Inflictor or FallbackDamager
+		local Attacker = self:GetAttacker()
+		Attacker = IsValid( Attacker ) and Attacker or FallbackDamager
+
+		local dmgMul = lfsRpgDmgMulCvar:GetFloat()
+		util.BlastDamage( Inflictor, Attacker, self:WorldSpaceCenter(), 200 * dmgMul, 100 * dmgMul )
+
 		local effectdata = EffectData()
 			effectdata:SetOrigin( self:GetPos() )
 		util.Effect( "lfs_missile_explosion", effectdata )
