@@ -225,7 +225,7 @@ if SERVER then
 		Attacker = IsValid( Attacker ) and Attacker or FallbackDamager
 
 		local dmgMul = lfsRpgDmgMulCvar:GetFloat()
-		util.BlastDamage( Inflictor, Attacker, self:GetPos(), 200 * dmgMul, 100 * dmgMul )
+		util.BlastDamage( Inflictor, Attacker, self:WorldSpaceCenter(), 200 * dmgMul, 100 * dmgMul )
 
 		local effectdata = EffectData()
 			effectdata:SetOrigin( self:GetPos() )
