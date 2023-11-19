@@ -43,8 +43,12 @@ function SWEP:Initialize()
 	self:SetHoldType( self.HoldType )
 end
 
-local lfsRpgLockTime = CreateConVar( "lfs_rpglocktime", 3, FCVAR_ARCHIVE )
-local lfsRpgLockAngle = CreateConVar( "lfs_rpglockangle", 15, FCVAR_ARCHIVE )
+local lfsRpgLockTime
+local lfsRpgLockAngle
+if SERVER then
+	lfsRpgLockTime = CreateConVar( "lfs_rpglocktime", 3, FCVAR_ARCHIVE )
+	lfsRpgLockAngle = CreateConVar( "lfs_rpglockangle", 15, FCVAR_ARCHIVE )
+end
 
 function SWEP:Think()
 	if CLIENT then return end
