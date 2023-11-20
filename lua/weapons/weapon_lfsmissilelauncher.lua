@@ -30,7 +30,6 @@ SWEP.Secondary.Ammo			= "none"
 
 function SWEP:SetupDataTables()
 	self:NetworkVar( "Entity",0, "ClosestEnt" )
-	self:NetworkVar( "Float",0, "ClosestDist" )
 	self:NetworkVar( "Bool",0, "IsLocked" )
 end
 
@@ -105,6 +104,9 @@ function SWEP:Think()
 
 		for _, vehicle in ipairs( ents.FindByClass( "prop_vehicle_*" ) ) do
 			if IsValid( vehicle:GetDriver() ) then
+				local parent = vehicle:GetParent()
+				if IsValid( parent ) and parent.LFS then continue end -- don't target seats of lfs!
+
 				table.insert( self.FoundVehicles, vehicle )
 			end
 		end
@@ -146,7 +148,7 @@ function SWEP:Think()
 			local stuff = WorldToLocal( vehicle:GetPos(), Angle( 0, 0, 0 ), startpos, Owner:EyeAngles() + Angle(90,0,0) )
 			local dist = stuff:Length()
 
-			if dist < ClosestDist and Ang < SmallestAng then
+			if dist < ClosestDist + -500 and Ang < SmallestAng then -- only switch when much closer!
 				ClosestDist = dist
 				SmallestAng = Ang
 				if ClosestEnt ~= vehicle then
@@ -155,9 +157,10 @@ function SWEP:Think()
 			end
 		end
 
-		if self:GetClosestEnt() ~= ClosestEnt then
+		local lockedBlockSwitching = self.Locked and IsValid( ClosestEnt )
+
+		if self:GetClosestEnt() ~= ClosestEnt and not lockedBlockSwitching then
 			self:SetClosestEnt( ClosestEnt )
-			self:SetClosestDist( ClosestDist )
 
 			self.FindTime = curtime
 
@@ -199,7 +202,7 @@ function SWEP:PrimaryAttack()
 	self:SetNextPrimaryFire( CurTime() + 0.5 )
 	self:TakePrimaryAmmo( 1 )
 
-	timer.Simple( 0, function()
+	timer.Simple( 0.05, function()
 		if not IsValid( self ) then return end
 		if not SERVER then return end
 		self:Reload()
@@ -265,7 +268,6 @@ function SWEP:StopSounds()
 	end
 
 	self:SetClosestEnt( NULL )
-	self:SetClosestDist( 99999999999999 )
 	self:SetIsLocked( false )
 end
 
