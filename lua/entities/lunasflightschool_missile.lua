@@ -246,10 +246,12 @@ else
 		self.snd = CreateSound( self, "weapons/flaregun/burn.wav" )
 		self.snd:Play()
 
-		local effectdata = EffectData()
-			effectdata:SetOrigin( self:GetPos() )
-			effectdata:SetEntity( self )
-		util.Effect( "lfs_missile_trail", effectdata )
+		if CLIENT then
+			local effectdata = EffectData()
+				effectdata:SetOrigin( self:GetPos() )
+				effectdata:SetEntity( self )
+			util.Effect( "lfs_missile_trail", effectdata )
+		end
 	end
 
 	function ENT:Draw()
