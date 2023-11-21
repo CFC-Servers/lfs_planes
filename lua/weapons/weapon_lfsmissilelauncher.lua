@@ -30,7 +30,6 @@ SWEP.Secondary.Ammo			= "none"
 
 function SWEP:SetupDataTables()
 	self:NetworkVar( "Entity",0, "ClosestEnt" )
-	self:NetworkVar( "Float",0, "ClosestDist" )
 	self:NetworkVar( "Bool",0, "IsLocked" )
 end
 
@@ -59,8 +58,10 @@ function SWEP:Think()
 
 	local curtime = CurTime()
 	local Owner = self:GetOwner()
+	local findTime = self.FindTime
+	local lockOnTime = lfsRpgLockTime:GetFloat()
 
-	if self.FindTime + lfsRpgLockTime:GetFloat() < curtime and IsValid( self:GetClosestEnt() ) then
+	if findTime + lockOnTime < curtime and IsValid( self:GetClosestEnt() ) then
 		self.Locked = true
 	else
 		self.Locked = false
@@ -105,6 +106,9 @@ function SWEP:Think()
 
 		for _, vehicle in ipairs( ents.FindByClass( "prop_vehicle_*" ) ) do
 			if IsValid( vehicle:GetDriver() ) then
+				local parent = vehicle:GetParent()
+				if IsValid( parent ) and parent.LFS then continue end -- don't target seats of lfs!
+
 				table.insert( self.FoundVehicles, vehicle )
 			end
 		end
@@ -143,9 +147,10 @@ function SWEP:Think()
 
 			table.insert( Vehicles, vehicle )
 
-			local stuff = WorldToLocal( vehicle:GetPos(), Angle( 0, 0, 0 ), startpos, Owner:EyeAngles() + Angle(90,0,0) )
+			local stuff = WorldToLocal( vehicle:GetPos(), Angle( 0, 0, 0 ), startpos, Owner:EyeAngles() + Angle( 90, 0, 0 ) )
 			local dist = stuff:Length()
 
+			 -- only switch when much closer!
 			if dist < ClosestDist and Ang < SmallestAng then
 				ClosestDist = dist
 				SmallestAng = Ang
@@ -155,9 +160,15 @@ function SWEP:Think()
 			end
 		end
 
-		if self:GetClosestEnt() ~= ClosestEnt then
+		local entInSights = IsValid( ClosestEnt )
+		local anOldEntInSights = IsValid( self:GetClosestEnt() )
+		local lockingOnForOneFourthOfLockOnTime = ( findTime + ( lockOnTime / 4 ) ) < curtime
+		local lockingOnBlockSwitching = lockingOnForOneFourthOfLockOnTime and anOldEntInSights and entInSights
+
+		-- switch targets when not locking onto a target for more than 1/4th of the lockOnTime
+		-- stops the rpg switching between really close targets, eg bunch of people in a simfphys, prop car, prop helicopter.
+		if self:GetClosestEnt() ~= ClosestEnt and not lockingOnBlockSwitching then
 			self:SetClosestEnt( ClosestEnt )
-			self:SetClosestDist( ClosestDist )
 
 			self.FindTime = curtime
 
@@ -194,17 +205,16 @@ function SWEP:CanSee( entity, owner )
 end
 
 function SWEP:PrimaryAttack()
+
+	if self:Clip1() <= 0 then
+		if not SERVER then return end
+		self:Reload()
+	end
+
 	if not self:CanPrimaryAttack() then return end
 
 	self:SetNextPrimaryFire( CurTime() + 0.5 )
 	self:TakePrimaryAmmo( 1 )
-
-	timer.Simple( 0, function()
-		if not IsValid( self ) then return end
-		if not SERVER then return end
-		self:Reload()
-
-	end )
 
 	local Owner = self:GetOwner()
 
@@ -265,7 +275,6 @@ function SWEP:StopSounds()
 	end
 
 	self:SetClosestEnt( NULL )
-	self:SetClosestDist( 99999999999999 )
 	self:SetIsLocked( false )
 end
 
