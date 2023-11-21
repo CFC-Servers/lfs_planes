@@ -68,7 +68,6 @@ if SERVER then
 			TargetPos = followent:LocalToWorld( followsPhysObj:GetMassCenter() )
 		else
 			TargetPos = followent:WorldSpaceCenter()
-
 		end
 
 		local pos = TargetPos + followent:GetVelocity() * 0.15
@@ -95,7 +94,6 @@ if SERVER then
 			elseif badAngles then
 				self:SetLockOn( nil )
 				return
-
 			end
 
 			AF.p = math.Clamp( AF.p * 400,-turnrate,turnrate )
@@ -176,6 +174,18 @@ if SERVER then
 		end
 	end
 
+	function ENT:GetDirectHitDamage( HitEnt )
+		local hookResult = hook.Run( "LFS.MissileDirectHitDamage", self, HitEnt )
+		if hookResult ~= nil and isnumber( hookResult ) then return hookResult end
+
+		local dmgAmount = 600
+
+		if HitEnt:IsNPC() or HitEnt:IsPlayer() or HitEnt:IsNextBot() then
+			dmgAmount = 100
+		end
+		return dmgAmount
+	end
+
 	function ENT:HitEntity( HitEnt )
 		if IsValid( HitEnt ) then
 			local Pos = self:GetPos()
@@ -188,15 +198,10 @@ if SERVER then
 				effectdata:SetNormal( -self:GetForward() )
 			util.Effect( "manhacksparks", effectdata, true, true )
 
-			local dmgDone = 600
-
-			if HitEnt:IsNPC() or HitEnt:IsPlayer() or HitEnt:IsNextBot() then
-				dmgDone = 100
-
-			end
+			local dmgAmount = self:GetDirectHitDamage( HitEnt )
 
 			local dmginfo = DamageInfo()
-				dmginfo:SetDamage( dmgDone * lfsRpgDmgMulCvar:GetFloat() )
+				dmginfo:SetDamage( dmgAmount * lfsRpgDmgMulCvar:GetFloat() )
 				dmginfo:SetAttacker( IsValid( self:GetAttacker() ) and self:GetAttacker() or self )
 				dmginfo:SetDamageType( DMG_DIRECT )
 				dmginfo:SetInflictor( self )
@@ -253,12 +258,10 @@ else
 		self.snd = CreateSound( self, "weapons/flaregun/burn.wav" )
 		self.snd:Play()
 
-		if CLIENT then
-			local effectdata = EffectData()
-				effectdata:SetOrigin( self:GetPos() )
-				effectdata:SetEntity( self )
-			util.Effect( "lfs_missile_trail", effectdata )
-		end
+		local effectdata = EffectData()
+			effectdata:SetOrigin( self:GetPos() )
+			effectdata:SetEntity( self )
+		util.Effect( "lfs_missile_trail", effectdata, true, true )
 	end
 
 	function ENT:Draw()

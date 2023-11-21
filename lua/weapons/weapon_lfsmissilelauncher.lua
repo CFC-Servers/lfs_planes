@@ -147,10 +147,11 @@ function SWEP:Think()
 
 			table.insert( Vehicles, vehicle )
 
-			local stuff = WorldToLocal( vehicle:GetPos(), Angle( 0, 0, 0 ), startpos, Owner:EyeAngles() + Angle(90,0,0) )
+			local stuff = WorldToLocal( vehicle:GetPos(), Angle( 0, 0, 0 ), startpos, Owner:EyeAngles() + Angle( 90, 0, 0 ) )
 			local dist = stuff:Length()
 
-			if dist < ClosestDist and Ang < SmallestAng then -- only switch when much closer!
+			 -- only switch when much closer!
+			if dist < ClosestDist and Ang < SmallestAng then
 				ClosestDist = dist
 				SmallestAng = Ang
 				if ClosestEnt ~= vehicle then
@@ -159,10 +160,13 @@ function SWEP:Think()
 			end
 		end
 
-		print( findTime, curtime )
+		local entInSights = IsValid( ClosestEnt )
+		local anOldEntInSights = IsValid( self:GetClosestEnt() )
+		local lockingOnForOneFourthOfLockOnTime = ( findTime + ( lockOnTime / 4 ) ) < curtime
+		local lockingOnBlockSwitching = lockingOnForOneFourthOfLockOnTime and anOldEntInSights and entInSights
 
-		local lockingOnBlockSwitching = ( findTime + ( lockOnTime / 4 ) ) < curtime and IsValid( self:GetClosestEnt() ) and IsValid( ClosestEnt )
-
+		-- switch targets when not locking onto a target for more than 1/4th of the lockOnTime
+		-- stops the rpg switching between really close targets, eg bunch of people in a simfphys, prop car, prop helicopter.
 		if self:GetClosestEnt() ~= ClosestEnt and not lockingOnBlockSwitching then
 			self:SetClosestEnt( ClosestEnt )
 
@@ -201,17 +205,16 @@ function SWEP:CanSee( entity, owner )
 end
 
 function SWEP:PrimaryAttack()
+
+	if self:Clip1() <= 0 then
+		if not SERVER then return end
+		self:Reload()
+	end
+
 	if not self:CanPrimaryAttack() then return end
 
 	self:SetNextPrimaryFire( CurTime() + 0.5 )
 	self:TakePrimaryAmmo( 1 )
-
-	timer.Simple( 0.05, function()
-		if not IsValid( self ) then return end
-		if not SERVER then return end
-		self:Reload()
-
-	end )
 
 	local Owner = self:GetOwner()
 
