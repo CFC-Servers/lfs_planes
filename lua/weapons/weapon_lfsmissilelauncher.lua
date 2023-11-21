@@ -58,8 +58,10 @@ function SWEP:Think()
 
 	local curtime = CurTime()
 	local Owner = self:GetOwner()
+	local findTime = self.FindTime
+	local lockOnTime = lfsRpgLockTime:GetFloat()
 
-	if self.FindTime + lfsRpgLockTime:GetFloat() < curtime and IsValid( self:GetClosestEnt() ) then
+	if findTime + lockOnTime < curtime and IsValid( self:GetClosestEnt() ) then
 		self.Locked = true
 	else
 		self.Locked = false
@@ -148,7 +150,7 @@ function SWEP:Think()
 			local stuff = WorldToLocal( vehicle:GetPos(), Angle( 0, 0, 0 ), startpos, Owner:EyeAngles() + Angle(90,0,0) )
 			local dist = stuff:Length()
 
-			if dist < ClosestDist + -500 and Ang < SmallestAng then -- only switch when much closer!
+			if dist < ClosestDist and Ang < SmallestAng then -- only switch when much closer!
 				ClosestDist = dist
 				SmallestAng = Ang
 				if ClosestEnt ~= vehicle then
@@ -157,9 +159,11 @@ function SWEP:Think()
 			end
 		end
 
-		local lockedBlockSwitching = self.Locked and IsValid( ClosestEnt )
+		print( findTime, curtime )
 
-		if self:GetClosestEnt() ~= ClosestEnt and not lockedBlockSwitching then
+		local lockingOnBlockSwitching = ( findTime + ( lockOnTime / 4 ) ) < curtime and IsValid( self:GetClosestEnt() ) and IsValid( ClosestEnt )
+
+		if self:GetClosestEnt() ~= ClosestEnt and not lockingOnBlockSwitching then
 			self:SetClosestEnt( ClosestEnt )
 
 			self.FindTime = curtime

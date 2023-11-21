@@ -188,8 +188,15 @@ if SERVER then
 				effectdata:SetNormal( -self:GetForward() )
 			util.Effect( "manhacksparks", effectdata, true, true )
 
+			local dmgDone = 600
+
+			if HitEnt:IsNPC() or HitEnt:IsPlayer() or HitEnt:IsNextBot() then
+				dmgDone = 100
+
+			end
+
 			local dmginfo = DamageInfo()
-				dmginfo:SetDamage( 600 * lfsRpgDmgMulCvar:GetFloat() )
+				dmginfo:SetDamage( dmgDone * lfsRpgDmgMulCvar:GetFloat() )
 				dmginfo:SetAttacker( IsValid( self:GetAttacker() ) and self:GetAttacker() or self )
 				dmginfo:SetDamageType( DMG_DIRECT )
 				dmginfo:SetInflictor( self )
