@@ -230,6 +230,7 @@ if SERVER then
 	end
 
 	function ENT:Detonate()
+		self:Remove()
 		local FallbackDamager = Entity( 0 )
 		local Inflictor = self:GetInflictor()
 		Inflictor = IsValid( Inflictor ) and Inflictor or FallbackDamager
@@ -242,8 +243,6 @@ if SERVER then
 		local effectdata = EffectData()
 			effectdata:SetOrigin( self:GetPos() )
 		util.Effect( "lfs_missile_explosion", effectdata )
-
-		self:Remove()
 	end
 
 	function ENT:OnTakeDamage( dmginfo )
