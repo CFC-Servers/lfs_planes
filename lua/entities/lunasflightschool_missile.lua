@@ -180,17 +180,20 @@ if SERVER then
 	function ENT:DoHitTrace( myPos )
 		local startPos = myPos or self:GetPos()
 		local offset = self:GetForward() * 20
+		local inflic = self:GetInflictor()
 
 		local trResult = util.TraceHull( {
 			start = startPos,
 			endpos = startPos + offset,
-			filter = { self, self:GetOwner() },
+			filter = { self, self:GetOwner(), inflic },
 			maxs = missileHitboxMax,
 			mins = missileHitboxMins,
 			mask = MASK_SOLID,
 		} )
 
 		if trResult.Hit then
+			-- dont hit sub-ents of the inflictor
+			if IsValid( inflic ) and IsValid( trResult.Entity:GetParent() ) and trResult.Entity:GetParent() == inflic then return end
 			self:HitEntity( trResult.Entity )
 			return true
 		end
