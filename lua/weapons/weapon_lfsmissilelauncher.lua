@@ -29,8 +29,8 @@ SWEP.Secondary.Automatic	= false
 SWEP.Secondary.Ammo			= "none"
 
 function SWEP:SetupDataTables()
-	self:NetworkVar( "Entity",0, "ClosestEnt" )
-	self:NetworkVar( "Bool",0, "IsLocked" )
+	self:NetworkVar( "Entity", 0, "ClosestEnt" )
+	self:NetworkVar( "Bool", 0, "IsLocked" )
 end
 
 local wepIconColor = Color( 255, 210, 0, 255 )
@@ -170,9 +170,8 @@ function SWEP:Think()
 		if self:GetClosestEnt() ~= ClosestEnt and not lockingOnBlockSwitching then
 			self:SetClosestEnt( ClosestEnt )
 
-			self.FindTime = curtime
-
 			if IsValid( ClosestEnt ) then
+				self.FindTime = curtime
 				self.TrackSND = CreateSound( Owner, "lfs/radar_track.wav" )
 				self.TrackSND:PlayEx( 0, 100 )
 				self.TrackSND:ChangeVolume( 0.5, 2 )

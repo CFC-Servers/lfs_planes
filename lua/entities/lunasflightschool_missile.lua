@@ -17,6 +17,22 @@ if SERVER then
 	local lfsRpgDmgMulCvar = CreateConVar( "lfs_missiledamagemul", 1, FCVAR_ARCHIVE )
 	local lfsRpgMobilityMul = CreateConVar( "lfs_missilemobilitymul", 1, FCVAR_ARCHIVE )
 
+	local maxBlindfireSpeed = 3000
+
+	sound.Add( {
+		name = "lfs_impactflesh",
+		channel = CHAN_STATIC,
+		volume = 1.0,
+		level = 130,
+		pitch = { 90, 100 },
+		sound = {
+			"physics/flesh/flesh_squishy_impact_hard1.wav",
+			"physics/flesh/flesh_squishy_impact_hard2.wav",
+			"physics/flesh/flesh_squishy_impact_hard3.wav",
+			"physics/flesh/flesh_squishy_impact_hard4.wav"
+		}
+	} )
+
 	function ENT:SpawnFunction( _, tr, ClassName )
 
 		if not tr.Hit then return end
@@ -37,7 +53,13 @@ if SERVER then
 		local pObj = self:GetPhysicsObject()
 
 		if IsValid( pObj ) then
-			pObj:SetVelocityInstantaneous( self:GetForward() * ( self:GetStartVelocity() + 3000 ) )
+			-- ramp up to full speed over a bit less than 1 second
+			local timeAlive = math.abs( self:GetCreationTime() - CurTime() )
+			local offsettedAlive = timeAlive + 0.1
+			local speed = math.Clamp( offsettedAlive * maxBlindfireSpeed, 0, maxBlindfireSpeed )
+			local vel = ( speed * lfsRpgMobilityMul:GetFloat() )
+
+			pObj:SetVelocityInstantaneous( self:GetForward() * ( self:GetStartVelocity() + vel ) )
 			pObj:SetAngleVelocity( pObj:GetAngleVelocity() * 0.995 ) -- slowly spiral out of a turn
 		end
 	end
@@ -158,32 +180,42 @@ if SERVER then
 	function ENT:DoHitTrace( myPos )
 		local startPos = myPos or self:GetPos()
 		local offset = self:GetForward() * 20
+		local inflic = self:GetInflictor()
 
 		local trResult = util.TraceHull( {
 			start = startPos,
 			endpos = startPos + offset,
-			filter = { self, self:GetOwner() },
+			filter = { self, self:GetOwner(), inflic },
 			maxs = missileHitboxMax,
 			mins = missileHitboxMins,
 			mask = MASK_SOLID,
 		} )
 
 		if trResult.Hit then
+			-- dont hit sub-ents of the inflictor
+			if IsValid( inflic ) and IsValid( trResult.Entity:GetParent() ) and trResult.Entity:GetParent() == inflic then return end
 			self:HitEntity( trResult.Entity )
 			return true
 		end
 	end
 
 	function ENT:GetDirectHitDamage( HitEnt )
-		local hookResult = hook.Run( "LFS.MissileDirectHitDamage", self, HitEnt )
-		if hookResult ~= nil and isnumber( hookResult ) then return hookResult end
+		local hookResultDmg, hookResultSound = hook.Run( "LFS.MissileDirectHitDamage", self, HitEnt )
+		if hookResultDmg ~= nil and isnumber( hookResultDmg ) then return hookResultDmg, hookResultSound end
 
 		local dmgAmount = 600
+		local dmgSound = "Missile.ShotDown"
 
-		if HitEnt:IsNPC() or HitEnt:IsPlayer() or HitEnt:IsNextBot() then
+		if HitEnt:IsNPC() or HitEnt:IsNextBot() then
 			dmgAmount = 100
+			dmgSound = "lfs_impactflesh"
+		elseif HitEnt:IsPlayer() then
+			-- this ends up getting added with the blastdamage, doesn't need to be too strong
+			dmgAmount = 50
+			dmgSound = "lfs_impactflesh"
 		end
-		return dmgAmount
+
+		return dmgAmount, dmgSound
 	end
 
 	function ENT:HitEntity( HitEnt )
@@ -198,7 +230,7 @@ if SERVER then
 				effectdata:SetNormal( -self:GetForward() )
 			util.Effect( "manhacksparks", effectdata, true, true )
 
-			local dmgAmount = self:GetDirectHitDamage( HitEnt )
+			local dmgAmount, dmgSound = self:GetDirectHitDamage( HitEnt )
 
 			local dmginfo = DamageInfo()
 				dmginfo:SetDamage( dmgAmount * lfsRpgDmgMulCvar:GetFloat() )
@@ -208,7 +240,7 @@ if SERVER then
 				dmginfo:SetDamagePosition( Pos )
 			HitEnt:TakeDamageInfo( dmginfo )
 
-			sound.Play( "Missile.ShotDown", Pos, 140 )
+			sound.Play( dmgSound, Pos, 140 )
 
 		end
 
@@ -230,19 +262,26 @@ if SERVER then
 	end
 
 	function ENT:Detonate()
-		self:Remove()
-		local FallbackDamager = Entity( 0 )
-		local Inflictor = self:GetInflictor()
-		Inflictor = IsValid( Inflictor ) and Inflictor or FallbackDamager
-		local Attacker = self:GetAttacker()
-		Attacker = IsValid( Attacker ) and Attacker or FallbackDamager
-
 		local dmgMul = lfsRpgDmgMulCvar:GetFloat()
-		util.BlastDamage( Inflictor, Attacker, self:WorldSpaceCenter(), 200 * dmgMul, 100 * dmgMul )
+
+		local Inflictor = self:GetInflictor()
+		local Attacker = self:GetAttacker()
+
+		local ExplodePos = self:WorldSpaceCenter()
 
 		local effectdata = EffectData()
 			effectdata:SetOrigin( self:GetPos() )
 		util.Effect( "lfs_missile_explosion", effectdata )
+
+		self:Remove()
+
+		timer.Simple( 0, function()
+			local FallbackDamager = Entity( 0 )
+			Inflictor = IsValid( Inflictor ) and Inflictor or FallbackDamager
+			Attacker = IsValid( Attacker ) and Attacker or FallbackDamager
+
+			util.BlastDamage( Inflictor, Attacker, ExplodePos, 200 * dmgMul, 100 * dmgMul )
+		end )
 	end
 
 	function ENT:OnTakeDamage( dmginfo )
