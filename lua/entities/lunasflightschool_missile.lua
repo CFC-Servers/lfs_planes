@@ -206,7 +206,9 @@ if SERVER then
 		local dmgAmount = 600
 		local dmgSound = "Missile.ShotDown"
 
-		if HitEnt:IsNPC() or HitEnt:IsNextBot() then
+		if HitEnt.IsSimfphyscar then
+			dmgAmount = 1000
+		elseif HitEnt:IsNPC() or HitEnt:IsNextBot() then
 			dmgAmount = 100
 			dmgSound = "lfs_impactflesh"
 		elseif HitEnt:IsPlayer() then
@@ -221,6 +223,7 @@ if SERVER then
 	function ENT:HitEntity( HitEnt )
 		if IsValid( HitEnt ) then
 			local Pos = self:GetPos()
+			-- hit simfphys car instead of simfphys wheel
 			if HitEnt.GetBaseEnt and IsValid( HitEnt:GetBaseEnt() ) then
 				HitEnt = HitEnt:GetBaseEnt()
 			end
