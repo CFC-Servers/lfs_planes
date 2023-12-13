@@ -325,7 +325,7 @@ function meta:lfsGetInput( name )
 end
 
 if SERVER then
-    resource.AddWorkshop( "2966479594" )
+    resource.AddWorkshop( "3112828460" )
 
     util.AddNetworkString( "lfs_failstartnotify" )
     util.AddNetworkString( "lfs_admin_setconvar" )
