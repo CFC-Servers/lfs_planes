@@ -85,10 +85,6 @@ hook.Add( "OnEntityCreated", "!!!!lfsEntitySorter", function( ent )
             end
 
             table.insert( simfphys.LFS.PlanesStored, ent )
-
-            if SERVER then
-                simfphys.LFS:FixVelocity()
-            end
         end
 
         if ent.LVS then
@@ -98,12 +94,12 @@ hook.Add( "OnEntityCreated", "!!!!lfsEntitySorter", function( ent )
 end )
 
 hook.Add( "CalcMainActivity", "!!!lfs_playeranimations", function( ply )
-    if not ply.lfsGetPlane then return end
+    if not ply:GetTable().lfsGetPlane then return end
 
     local Ent = ply:lfsGetPlane()
 
     if IsValid( Ent ) then
-        local A,B = Ent:CalcMainActivity( ply )
+        local A, B = Ent:CalcMainActivity( ply )
 
         if A and B then
             return A, B
@@ -315,13 +311,7 @@ end
 
 function meta:lfsGetInput( name )
     local Pressed = lfsGetInput( self, name )
-    local NewPressed = hook.Run( "LFS.PlayerKeyDown", self, name, Pressed )
-
-    if isbool( NewPressed ) then
-        return NewPressed
-    else
-        return Pressed
-    end
+    return Pressed
 end
 
 if SERVER then
@@ -368,14 +358,14 @@ if SERVER then
         net.Send( ply )
     end )
 
-    net.Receive( "lfs_admin_setconvar", function( length, ply )
+    net.Receive( "lfs_admin_setconvar", function( _, ply )
         if not IsValid( ply ) or not ply:IsSuperAdmin() then return end
 
         local ConVar = net.ReadString()
         local Value = tonumber( net.ReadString() )
 
         RunConsoleCommand( ConVar, Value )
-    end)
+    end )
 
     function meta:lfsSetAITeam( nTeam )
         nTeam = nTeam or simfphys.LFS.PlayerDefaultTeam:GetInt()
@@ -427,9 +417,13 @@ if SERVER then
         end
     end
 
-    hook.Add("CanExitVehicle","!!!lfsCanExitVehicle",function(vehicle,ply)
+    hook.Add( "InitPostEntity", "lfs_FixVelocity", function()
+        simfphys.LFS:FixVelocity()
+    end )
+
+    hook.Add( "CanExitVehicle", "!!!lfsCanExitVehicle", function( _, ply )
         if IsValid( ply:lfsGetPlane() ) then return not ply.LFS_HIPSTER end
-    end)
+    end )
 
     hook.Add( "PlayerButtonUp", "!!!lfsButtonUp", function( ply, button )
         for _, LFS_BIND in pairs( ply:lfsGetControls() ) do
