@@ -44,6 +44,7 @@ end
 
 local lfsRpgLockTime
 local lfsRpgLockAngle
+local lfsRpgMaxLockRange = CreateConVar( "lfs_rpgmaxrange", 60000, { FCVAR_ARCHIVE, FCVAR_REPLICATED } )
 if SERVER then
 	lfsRpgLockTime = CreateConVar( "lfs_rpglocktime", 3, FCVAR_ARCHIVE )
 	lfsRpgLockAngle = CreateConVar( "lfs_rpglockangle", 15, FCVAR_ARCHIVE )
@@ -128,6 +129,9 @@ function SWEP:Think()
 		local AimForward = Owner:GetAimVector()
 		local startpos = Owner:GetShootPos()
 
+		local maxDist = lfsRpgMaxLockRange:GetInt()
+		local lockOnAng = lfsRpgLockAngle:GetInt()
+
 		local Vehicles = {}
 		local ClosestEnt = NULL
 		local ClosestDist = math.huge
@@ -143,12 +147,14 @@ function SWEP:Think()
 			local toEnt = sub:GetNormalized()
 			local Ang = math.acos( math.Clamp( AimForward:Dot( toEnt ), -1, 1 ) ) * ( 180 / math.pi )
 
-			if Ang >= lfsRpgLockAngle:GetInt() or not self:CanSee( vehicle, Owner ) then continue end
+			if Ang >= lockOnAng or not self:CanSee( vehicle, Owner ) then continue end
 
 			table.insert( Vehicles, vehicle )
 
 			local stuff = WorldToLocal( vehicle:GetPos(), Angle( 0, 0, 0 ), startpos, Owner:EyeAngles() + Angle( 90, 0, 0 ) )
 			local dist = stuff:Length()
+
+			if dist > maxDist then continue end
 
 			 -- only switch when much closer!
 			if dist < ClosestDist and Ang < SmallestAng then
@@ -255,6 +261,8 @@ function SWEP:Reload()
 	if self:Clip1() < self.Primary.ClipSize and self:GetOwner():GetAmmoCount( self.Primary.Ammo ) > 0 then
 		self:DefaultReload( ACT_VM_RELOAD )
 		self:UnLock()
+	else
+		self:UnLock()
 	end
 end
 
@@ -301,6 +309,7 @@ local function PaintPlaneIdentifier( ply )
 	local MyPos = ply:GetPos()
 	local MyTeam = ply:lfsGetAITeam()
 	local startpos = ply:GetShootPos()
+	local maxDist = lfsRpgMaxLockRange:GetInt()
 
 	for _, vehicle in pairs( AllPlanes ) do
 		if not IsValid( vehicle ) then continue end
@@ -309,6 +318,8 @@ local function PaintPlaneIdentifier( ply )
 
 		local Pos = rPos:ToScreen()
 		local Dist = ( MyPos - rPos ):Length()
+		if Dist > maxDist then continue end
+
 		if util.TraceLine( { start = startpos,endpos = rPos,mask = MASK_NPCWORLDSTATIC } ).Hit then continue end
 
 		local Alpha = math.max( 255 - Dist * 0.015, 0 )

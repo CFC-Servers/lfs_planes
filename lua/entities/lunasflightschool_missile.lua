@@ -65,12 +65,11 @@ if SERVER then
 	end
 
 	function ENT:FollowTarget( followent )
-
 		-- increase turnrate the longer missile is alive, bear down on far targets.
 		-- goal is to punish pilots/drivers who camp far away from players.
 		local timeAlive = math.abs( self:GetCreationTime() - CurTime() )
-		local turnrateAdd = math.Clamp( timeAlive * 75, 0, 500 ) * lfsRpgMobilityMul:GetFloat()
-		local speedAdd = math.Clamp( timeAlive * 400, 0, 5000 ) * lfsRpgMobilityMul:GetFloat()
+		local turnrateAdd = math.Clamp( timeAlive * 75, 0, 350 ) * lfsRpgMobilityMul:GetFloat()
+		local speedAdd = math.Clamp( timeAlive * 400, 0, 10000 ) * lfsRpgMobilityMul:GetFloat()
 
 		local speed = self:GetStartVelocity() + ( self:GetDirtyMissile() and 4000 or 2500 )
 		speed = speed + speedAdd
@@ -103,7 +102,7 @@ if SERVER then
 			local targetdir = subtractionProduct:GetNormalized()
 
 			local AF = self:WorldToLocalAngles( targetdir:Angle() )
-			local badAngles = AF.p > 110 or AF.y > 110
+			local badAngles = AF.p > 100 or AF.y > 100
 
 			if distToTargSqr < 500^2 then
 				self:DoHitTrace( myPos )
