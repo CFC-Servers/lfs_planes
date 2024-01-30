@@ -298,6 +298,8 @@ else
 		self.snd = CreateSound( self, "weapons/flaregun/burn.wav" )
 		self.snd:Play()
 
+		-- make trail effect on client init
+		-- very very unreliable on server init
 		local effectdata = EffectData()
 			effectdata:SetOrigin( self:GetPos() )
 			effectdata:SetEntity( self )

@@ -249,7 +249,15 @@ function SWEP:PrimaryAttack()
 end
 
 function SWEP:SecondaryAttack()
-	return false
+	if not IsValid( self:GetClosestEnt() ) then return false end
+	if not IsFirstTimePredicted() then return end
+	self:SetNextSecondaryFire( CurTime() + 0.5 )
+	if CLIENT then
+		self:EmitSound( "buttons/lightswitch2.wav", 75, math.random( 150, 175 ), 0.25 )
+
+	else
+		self:UnLock()
+	end
 end
 
 function SWEP:Deploy()
@@ -260,8 +268,6 @@ end
 function SWEP:Reload()
 	if self:Clip1() < self.Primary.ClipSize and self:GetOwner():GetAmmoCount( self.Primary.Ammo ) > 0 then
 		self:DefaultReload( ACT_VM_RELOAD )
-		self:UnLock()
-	else
 		self:UnLock()
 	end
 end
