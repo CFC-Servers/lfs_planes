@@ -65,12 +65,11 @@ if SERVER then
 	end
 
 	function ENT:FollowTarget( followent )
-
 		-- increase turnrate the longer missile is alive, bear down on far targets.
 		-- goal is to punish pilots/drivers who camp far away from players.
 		local timeAlive = math.abs( self:GetCreationTime() - CurTime() )
-		local turnrateAdd = math.Clamp( timeAlive * 75, 0, 500 ) * lfsRpgMobilityMul:GetFloat()
-		local speedAdd = math.Clamp( timeAlive * 400, 0, 5000 ) * lfsRpgMobilityMul:GetFloat()
+		local turnrateAdd = math.Clamp( timeAlive * 75, 0, 350 ) * lfsRpgMobilityMul:GetFloat()
+		local speedAdd = math.Clamp( timeAlive * 400, 0, 10000 ) * lfsRpgMobilityMul:GetFloat()
 
 		local speed = self:GetStartVelocity() + ( self:GetDirtyMissile() and 4000 or 2500 )
 		speed = speed + speedAdd
@@ -103,12 +102,12 @@ if SERVER then
 			local targetdir = subtractionProduct:GetNormalized()
 
 			local AF = self:WorldToLocalAngles( targetdir:Angle() )
-			local badAngles = AF.p > 110 or AF.y > 110
+			local badAngles = AF.p > 100 or AF.y > 100
 
-			if distToTargSqr < 500^2 then
-				self:DoHitTrace( myPos )
-			-- target is cheating! they're no collided!
+			if distToTargSqr < 500^2 and self:DoHitTrace( myPos ) then
+				return
 			-- if you want to make a plane/vehicle not get targeted by LFS missilelauncher then see LFS.RPGBlockLockon hook, in the launcher
+			-- target is cheating! they're no collided!
 			elseif distToTargSqr < 75^2 then
 				self:HitEntity( followent )
 				return
@@ -123,6 +122,7 @@ if SERVER then
 			AF.r = math.Clamp( AF.r * 400,-turnrate,turnrate )
 
 			local AVel = pObj:GetAngleVelocity()
+			if not IsValid( pObj ) then return end
 			pObj:AddAngleVelocity( Vector( AF.r,AF.p,AF.y ) - AVel )
 
 			pObj:SetVelocityInstantaneous( self:GetForward() * speed )
@@ -299,6 +299,8 @@ else
 		self.snd = CreateSound( self, "weapons/flaregun/burn.wav" )
 		self.snd:Play()
 
+		-- make trail effect on client init
+		-- very very unreliable on server init
 		local effectdata = EffectData()
 			effectdata:SetOrigin( self:GetPos() )
 			effectdata:SetEntity( self )
