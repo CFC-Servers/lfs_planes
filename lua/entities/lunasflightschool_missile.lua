@@ -104,10 +104,10 @@ if SERVER then
 			local AF = self:WorldToLocalAngles( targetdir:Angle() )
 			local badAngles = AF.p > 100 or AF.y > 100
 
-			if distToTargSqr < 500^2 then
-				self:DoHitTrace( myPos )
-			-- target is cheating! they're no collided!
+			if distToTargSqr < 500^2 and self:DoHitTrace( myPos ) then
+				return
 			-- if you want to make a plane/vehicle not get targeted by LFS missilelauncher then see LFS.RPGBlockLockon hook, in the launcher
+			-- target is cheating! they're no collided!
 			elseif distToTargSqr < 75^2 then
 				self:HitEntity( followent )
 				return
@@ -122,6 +122,7 @@ if SERVER then
 			AF.r = math.Clamp( AF.r * 400,-turnrate,turnrate )
 
 			local AVel = pObj:GetAngleVelocity()
+			if not IsValid( pObj ) then return end
 			pObj:AddAngleVelocity( Vector( AF.r,AF.p,AF.y ) - AVel )
 
 			pObj:SetVelocityInstantaneous( self:GetForward() * speed )
