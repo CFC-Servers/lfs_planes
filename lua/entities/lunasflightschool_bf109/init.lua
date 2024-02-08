@@ -29,7 +29,7 @@ function ENT:PrimaryAttack()
 	bullet.TracerName = "lfs_tracer_green"
 	bullet.Force = 10
 	bullet.HullSize = 5
-	bullet.Damage = 10
+	bullet.Damage = 20
 	bullet.Attacker = self:GetDriver()
 	bullet.AmmoType = "Pistol"
 	bullet.Callback = function(att, tr, dmginfo)
@@ -64,7 +64,7 @@ function ENT:SecondaryAttack()
 	bullet.TracerName = "lfs_tracer_red"
 	bullet.Force = 100
 	bullet.HullSize = 10
-	bullet.Damage = 125
+	bullet.Damage = 175
 	bullet.Attacker = self:GetDriver()
 	bullet.AmmoType = "Pistol"
 	bullet.Callback = function(att, tr, dmginfo)
