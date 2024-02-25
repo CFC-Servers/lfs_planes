@@ -15,43 +15,46 @@ function ENT:DamageFX()
 	end
 end
 
+local exhaustPositions = {
+	Vector(129.28,17.85,68.91),
+	Vector(122.79,17.88,69.14),
+	Vector(114.7,18.9,69.11),
+	Vector(107.43,19.74,68.82),
+	Vector(99.56,20.28,69.05),
+	Vector(91.97,20.31,68.9),
+}
+
+local effectAngle = Angle( -90, -20, 0 )
+
 function ENT:ExhaustFX()
 	if not self:GetEngineActive() then return end
+	local selfTbl = self:GetTable()
 
-	self.nextEFX = self.nextEFX or 0
+	selfTbl.nextEFX = selfTbl.nextEFX or 0
 
-	local THR = (self:GetRPM() - self.IdleRPM) / (self.LimitRPM - self.IdleRPM)
+	local THR = ( self:GetRPM() - selfTbl.IdleRPM ) / ( selfTbl.LimitRPM - selfTbl.IdleRPM )
 
-	if self.nextEFX < CurTime() then
-		self.nextEFX = CurTime() + 0.05 + (1 - THR) / 10
+	if selfTbl.nextEFX < CurTime() then
+		selfTbl.nextEFX = CurTime() + 0.05 + ( 1 - THR ) / 10
 
-		local Pos = {
-			Vector(129.28,17.85,68.91),
-			Vector(122.79,17.88,69.14),
-			Vector(114.7,18.9,69.11),
-			Vector(107.43,19.74,68.82),
-			Vector(99.56,20.28,69.05),
-			Vector(91.97,20.31,68.9),
-		}
-
-		for _, v in pairs(Pos) do
-			if math.random(0,1) == 1 then
+		for _, v in pairs( exhaustPositions ) do
+			if math.random( 0, 1 ) == 1 then
 				local effectdata = EffectData()
 					effectdata:SetOrigin( v )
-					effectdata:SetAngles( Angle(-90,-20,0) )
-					effectdata:SetMagnitude( math.Clamp(THR,0.2,1) )
+					effectdata:SetAngles( effectAngle )
+					effectdata:SetMagnitude( math.Clamp( THR, 0.2, 1 ) )
 					effectdata:SetEntity( self )
 				util.Effect( "lfs_exhaust", effectdata )
 			end
 
-			if math.random(0,1) == 1 then
+			if math.random( 0, 1 ) == 1 then
 				local vr = v
 				vr.y = -v.y
 
 				local effectdata = EffectData()
 					effectdata:SetOrigin( vr )
-					effectdata:SetAngles( Angle(-90,20,0) )
-					effectdata:SetMagnitude( math.Clamp(THR,0.2,1) )
+					effectdata:SetAngles( effectAngle )
+					effectdata:SetMagnitude( math.Clamp( THR, 0.2, 1 ) )
 					effectdata:SetEntity( self )
 				util.Effect( "lfs_exhaust", effectdata )
 			end
