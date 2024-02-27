@@ -37,7 +37,7 @@ function ENT:ExhaustFX()
 	if selfTbl.nextEFX < CurTime() then
 		selfTbl.nextEFX = CurTime() + 0.05 + ( 1 - THR ) / 10
 
-		for _, v in pairs( exhaustPositions ) do
+		for _, v in ipairs( exhaustPositions ) do
 			if math.random( 0, 1 ) == 1 then
 				local effectdata = EffectData()
 					effectdata:SetOrigin( v )
