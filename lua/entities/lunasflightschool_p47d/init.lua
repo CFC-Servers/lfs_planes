@@ -125,6 +125,7 @@ function ENT:RemoveAI()
 end
 
 function ENT:HandleWeapons(Fire1, Fire2)
+	local selfTbl = self:GetTable()
 	local Driver = self:GetDriver()
 
 	if IsValid( Driver ) then
@@ -141,8 +142,8 @@ function ENT:HandleWeapons(Fire1, Fire2)
 		self:PrimaryAttack()
 	end
 
-	if istable( self.MissileEnts ) then
-		for k, v in pairs( self.MissileEnts ) do
+	if istable( selfTbl.MissileEnts ) then
+		for k, v in pairs( selfTbl.MissileEnts ) do
 			if IsValid( v ) then
 				if k > self:GetAmmoSecondary() then
 					v:SetNoDraw( true )
@@ -153,19 +154,19 @@ function ENT:HandleWeapons(Fire1, Fire2)
 		end
 	end
 
-	if self.OldFire2 ~= Fire2 then
+	if selfTbl.OldFire2 ~= Fire2 then
 		if Fire2 then
 			self:SecondaryAttack()
 		end
-		self.OldFire2 = Fire2
+		selfTbl.OldFire2 = Fire2
 	end
 
-	if self.OldFire ~= Fire1 then
+	if selfTbl.OldFire ~= Fire1 then
 
 		if Fire1 then
 			if not self:GetAI() then
-				self.wpn1 = CreateSound( self, "SPITFIRE_FIRE_LOOP" )
-				self.wpn1:Play()
+				selfTbl.wpn1 = CreateSound( self, "SPITFIRE_FIRE_LOOP" )
+				selfTbl.wpn1:Play()
 				self:CallOnRemove( "stopmesounds1", function( ent )
 					if ent.wpn1 then
 						ent.wpn1:Stop()
@@ -173,11 +174,11 @@ function ENT:HandleWeapons(Fire1, Fire2)
 				end)
 			end
 		else
-			if self.OldFire == true then
-				if self.wpn1 then
-					self.wpn1:Stop()
+			if selfTbl.OldFire == true then
+				if selfTbl.wpn1 then
+					selfTbl.wpn1:Stop()
 				end
-				self.wpn1 = nil
+				selfTbl.wpn1 = nil
 
 				if not self:GetAI() then
 					self:EmitSound( "SPITFIRE_FIRE_LASTSHOT" )
@@ -185,7 +186,7 @@ function ENT:HandleWeapons(Fire1, Fire2)
 			end
 		end
 
-		self.OldFire = Fire1
+		selfTbl.OldFire = Fire1
 	end
 end
 

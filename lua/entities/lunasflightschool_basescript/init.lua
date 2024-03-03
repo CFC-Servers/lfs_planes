@@ -220,6 +220,7 @@ function ENT:CalcFlightOverride( Pitch, Yaw, Roll, Stability )
 end
 
 function ENT:CalcFlight()
+	local selfTbl = self:GetTable()
 	local MaxTurnSpeed = self:GetMaxTurnSpeed()
 	local MaxPitch = MaxTurnSpeed.p
 	local MaxYaw = MaxTurnSpeed.y
@@ -248,11 +249,11 @@ function ENT:CalcFlight()
 		local EyeAngles = Pod:WorldToLocalAngles( Driver:EyeAngles() )
 
 		if Driver:lfsGetInput( "FREELOOK" ) then
-			if isangle( self.StoredEyeAngles ) then
-				EyeAngles = self.StoredEyeAngles
+			if isangle( selfTbl.StoredEyeAngles ) then
+				EyeAngles = selfTbl.StoredEyeAngles
 			end
 		else
-			self.StoredEyeAngles = EyeAngles
+			selfTbl.StoredEyeAngles = EyeAngles
 		end
 
 		local LocalAngles = self:WorldToLocalAngles( EyeAngles )
@@ -268,7 +269,7 @@ function ENT:CalcFlight()
 			if Pitch_Up or Pitch_Dn then
 				EyeAngles = self:GetAngles()
 
-				self.StoredEyeAngles = Angle(EyeAngles.p,EyeAngles.y,0)
+				selfTbl.StoredEyeAngles = Angle(EyeAngles.p,EyeAngles.y,0)
 
 				local X = (Pitch_Up and -90 or 0) + (Pitch_Dn and 90 or 0)
 
@@ -279,7 +280,7 @@ function ENT:CalcFlight()
 		if Yaw_R or Yaw_L then
 			EyeAngles = self:GetAngles()
 
-			self.StoredEyeAngles = Angle(EyeAngles.p,EyeAngles.y,0)
+			selfTbl.StoredEyeAngles = Angle(EyeAngles.p,EyeAngles.y,0)
 
 			LocalAngles.y = (Yaw_R and -90 or 0) + (Yaw_L and 90 or 0)
 		end
@@ -306,8 +307,8 @@ function ENT:CalcFlight()
 		if self:GetAI() then
 			EyeAngles = self:RunAI()
 		else
-			if self:IsSpaceShip() and isangle( self.StoredEyeAngles ) then
-				EyeAngles = self.StoredEyeAngles
+			if self:IsSpaceShip() and isangle( selfTbl.StoredEyeAngles ) then
+				EyeAngles = selfTbl.StoredEyeAngles
 			end
 		end
 
@@ -338,16 +339,16 @@ function ENT:CalcFlight()
 	local RollRight = D and MaxRoll or 0
 
 	if (RollLeft + RollRight) == 0 then
-		self.m_smRoll = 0
+		selfTbl.m_smRoll = 0
 	else
-		self.m_smRoll = self.m_smRoll and self.m_smRoll + ((RollRight - RollLeft) - self.m_smRoll) * FrameTime() * 5 or 0
+		selfTbl.m_smRoll = selfTbl.m_smRoll and selfTbl.m_smRoll + ((RollRight - RollLeft) - selfTbl.m_smRoll) * FrameTime() * 5 or 0
 
-		if (self.m_smRoll > 0 and RollLeft > 0) or (self.m_smRoll < 0 and RollRight > 0) then
-			self.m_smRoll = 0
+		if (selfTbl.m_smRoll > 0 and RollLeft > 0) or (selfTbl.m_smRoll < 0 and RollRight > 0) then
+			selfTbl.m_smRoll = 0
 		end
 	end
 
-	local ManualRoll = self.m_smRoll
+	local ManualRoll = selfTbl.m_smRoll
 
 	local AutoRoll = (-LocalAngYaw * 22 * RollRate + LocalAngRoll * 3.5 * RudderFadeOut) * WingFinFadeOut
 	local VtolRoll = math.Clamp(((D and 10 or 0) - (A and 10 or 0) - self:GetAngles().r) * 5, -MaxRoll, MaxRoll)
@@ -445,6 +446,7 @@ function ENT:OnKeyThrottle( bPressed )
 end
 
 function ENT:HandleEngine()
+	local selfTbl = self:GetTable()
 	local IdleRPM = self:GetIdleRPM()
 	local MaxRPM = self:GetMaxRPM()
 	local LimitRPM = self:GetLimitRPM()
@@ -455,7 +457,7 @@ function ENT:HandleEngine()
 	local KeyThrottle = false
 	local KeyBrake = false
 
-	self.TargetRPM = self.TargetRPM or 0
+	selfTbl.TargetRPM = selfTbl.TargetRPM or 0
 
 	if EngActive then
 		local Pod = self:GetDriverSeat()
@@ -473,33 +475,33 @@ function ENT:HandleEngine()
 			RPMAdd = ((KeyThrottle and self:GetThrottleIncrement() or 0) - (KeyBrake and self:GetThrottleIncrement() or 0)) * FrameTime()
 		end
 
-		if KeyThrottle ~= self.oldKeyThrottle then
-			self.oldKeyThrottle = KeyThrottle
+		if KeyThrottle ~= selfTbl.oldKeyThrottle then
+			selfTbl.oldKeyThrottle = KeyThrottle
 
 			self:OnKeyThrottle( KeyThrottle )
 		end
 
-		self.TargetRPM = math.Clamp( self.TargetRPM + RPMAdd,IdleRPM,((self:GetAI() or KeyThrottle) and self:GetWepEnabled()) and LimitRPM or MaxRPM)
+		selfTbl.TargetRPM = math.Clamp( selfTbl.TargetRPM + RPMAdd,IdleRPM,((self:GetAI() or KeyThrottle) and self:GetWepEnabled()) and LimitRPM or MaxRPM)
 	else
-		self.TargetRPM = self.TargetRPM - math.Clamp(self.TargetRPM,-250,250)
+		selfTbl.TargetRPM = selfTbl.TargetRPM - math.Clamp(selfTbl.TargetRPM,-250,250)
 	end
 
-	if isnumber( self.VtolAllowInputBelowThrottle ) and not self:GetAI() then
-		local MaxRPMVtolMin = self:GetMaxRPM() * ((self.VtolAllowInputBelowThrottle - 1) / 100)
+	if isnumber( selfTbl.VtolAllowInputBelowThrottle ) and not self:GetAI() then
+		local MaxRPMVtolMin = self:GetMaxRPM() * ((selfTbl.VtolAllowInputBelowThrottle - 1) / 100)
 
 		if self:GetRPM() < MaxRPMVtolMin and not KeyThrottle then
-			self.TargetRPM = math.min( self.TargetRPM, MaxRPMVtolMin )
+			selfTbl.TargetRPM = math.min( selfTbl.TargetRPM, MaxRPMVtolMin )
 		end
 
 		--[[ while it makes perfect sense to clamp it in both directions, it just doesnt feel right
-		local MaxRPMVtolMax = self:GetMaxRPM() * (self.VtolAllowInputBelowThrottle / 100)
+		local MaxRPMVtolMax = self:GetMaxRPM() * (selfTbl.VtolAllowInputBelowThrottle / 100)
 		if self:GetRPM() > MaxRPMVtolMax and not KeyBrake then
-			self.TargetRPM = math.max( self.TargetRPM, MaxRPMVtolMax )
+			selfTbl.TargetRPM = math.max( selfTbl.TargetRPM, MaxRPMVtolMax )
 		end
 		]]--
 	end
 
-	self:SetRPM( self:GetRPM() + (self.TargetRPM - self:GetRPM()) * FrameTime() )
+	self:SetRPM( self:GetRPM() + (selfTbl.TargetRPM - self:GetRPM()) * FrameTime() )
 
 	local PhysObj = self:GetPhysicsObject()
 
@@ -517,20 +519,20 @@ function ENT:HandleEngine()
 		return
 	end
 
-	if self.VerticalTakeoff then
+	if selfTbl.VerticalTakeoff then
 		if self:IsSpaceShip() then
 			local Driver = self:GetDriver()
 
 			if IsValid( Driver ) then
 				local IsVtolActive = self:IsVtolModeActive()
 
-				if self.oldVtolMode ~= IsVtolActive then
-					self.oldVtolMode = IsVtolActive
+				if selfTbl.oldVtolMode ~= IsVtolActive then
+					selfTbl.oldVtolMode = IsVtolActive
 					self:OnVtolMode( IsVtolActive )
 				end
 
 				if IsVtolActive then
-					if isnumber( self.VtolAllowInputBelowThrottle ) then
+					if isnumber( selfTbl.VtolAllowInputBelowThrottle ) then
 						local KeyThrottle = Driver:lfsGetInput( "+PITCH" )
 						local KeyBrake = Driver:lfsGetInput( "-THROTTLE" ) and self:GetThrottlePercent() <= 10
 
@@ -539,18 +541,18 @@ function ENT:HandleEngine()
 
 						local VtolForce = (Up + Down) * PhysObj:GetMass() * 0.015
 
-						self.smfForce = isnumber( self.smfForce ) and (self.smfForce + (VtolForce - self.smfForce) * FrameTime() * 2) or VtolForce
-						self:ApplyThrustVtol( PhysObj, self:GetUp(), self.smfForce )
+						selfTbl.smfForce = isnumber( selfTbl.smfForce ) and (selfTbl.smfForce + (VtolForce - selfTbl.smfForce) * FrameTime() * 2) or VtolForce
+						self:ApplyThrustVtol( PhysObj, self:GetUp(), selfTbl.smfForce )
 					else
-						self.TargetRPM = (self:GetVelocity():Length() / MaxVelocity) * LimitRPM
+						selfTbl.TargetRPM = (self:GetVelocity():Length() / MaxVelocity) * LimitRPM
 
 						local Up = Driver:lfsGetInput( "+THROTTLE" ) and self:GetThrustVtol() or 0
 						local Down = Driver:lfsGetInput( "-THROTTLE" ) and -self:GetThrustVtol() or 0
 
 						local VtolForce = (Up + Down) * PhysObj:GetMass() * 0.015
 
-						self.smfForce = isnumber( self.smfForce ) and (self.smfForce + (VtolForce - self.smfForce) * FrameTime() * 2) or VtolForce
-						self:ApplyThrustVtol( PhysObj, self:GetUp(), self.smfForce )
+						selfTbl.smfForce = isnumber( selfTbl.smfForce ) and (selfTbl.smfForce + (VtolForce - selfTbl.smfForce) * FrameTime() * 2) or VtolForce
+						self:ApplyThrustVtol( PhysObj, self:GetUp(), selfTbl.smfForce )
 
 						return
 					end
@@ -686,12 +688,13 @@ end
 
 function ENT:HandleLandingGear()
 	local Driver = self:GetDriver()
+	local selfTbl = self:GetTable()
 
 	if IsValid( Driver ) then
 		local KeyJump = Driver:lfsGetInput( "VSPEC" )
 
-		if self.OldKeyJump ~= KeyJump then
-			self.OldKeyJump = KeyJump
+		if selfTbl.OldKeyJump ~= KeyJump then
+			selfTbl.OldKeyJump = KeyJump
 			if KeyJump then
 				self:ToggleLandingGear()
 				self:PhysWake()
@@ -700,33 +703,33 @@ function ENT:HandleLandingGear()
 	end
 
 	local TValAuto = (self:GetStability() > 0.3) and 0 or 1
-	local TValManual = self.LandingGearUp and 0 or 1
+	local TValManual = selfTbl.LandingGearUp and 0 or 1
 
-	local TVal = self.WheelAutoRetract and TValAuto or TValManual
+	local TVal = selfTbl.WheelAutoRetract and TValAuto or TValManual
 	local Speed = FrameTime()
 	local Speed2 = Speed * math.abs( math.cos( math.rad( self:GetLGear() * 180 ) ) )
 
 	self:SetLGear( self:GetLGear() + math.Clamp(TVal - self:GetLGear(),-Speed,Speed) )
 	self:SetRGear( self:GetRGear() + math.Clamp(TVal - self:GetRGear(),-Speed2,Speed2) )
 
-	if IsValid( self.wheel_R ) then
-		local RWpObj = self.wheel_R:GetPhysicsObject()
+	if IsValid( selfTbl.wheel_R ) then
+		local RWpObj = selfTbl.wheel_R:GetPhysicsObject()
 		if IsValid( RWpObj ) then
-			RWpObj:SetMass( 1 + (self.WheelMass - 1) * self:GetRGear() ^ 5 )
+			RWpObj:SetMass( 1 + (selfTbl.WheelMass - 1) * self:GetRGear() ^ 5 )
 		end
 	end
 
-	if IsValid( self.wheel_L ) then
-		local LWpObj = self.wheel_L:GetPhysicsObject()
+	if IsValid( selfTbl.wheel_L ) then
+		local LWpObj = selfTbl.wheel_L:GetPhysicsObject()
 		if IsValid( LWpObj ) then
-			LWpObj:SetMass( 1 + (self.WheelMass - 1) * self:GetLGear() ^ 5 )
+			LWpObj:SetMass( 1 + (selfTbl.WheelMass - 1) * self:GetLGear() ^ 5 )
 		end
 	end
 
-	if IsValid( self.wheel_C ) then
-		local CWpObj = self.wheel_C:GetPhysicsObject()
+	if IsValid( selfTbl.wheel_C ) then
+		local CWpObj = selfTbl.wheel_C:GetPhysicsObject()
 		if IsValid( CWpObj ) then
-			CWpObj:SetMass( 1 + (self.WheelMass - 1) * self:GetRGear() )
+			CWpObj:SetMass( 1 + (selfTbl.WheelMass - 1) * self:GetRGear() )
 		end
 	end
 end
