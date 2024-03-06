@@ -28,7 +28,7 @@ function ENT:PrimaryAttack()
 	bullet.TracerName = "lfs_tracer_white"
 	bullet.Force = 100
 	bullet.HullSize = 10
-	bullet.Damage = 26
+	bullet.Damage = 36
 	bullet.Attacker = self:GetDriver()
 	bullet.AmmoType = "Pistol"
 	bullet.Callback = function(att, tr, dmginfo)
