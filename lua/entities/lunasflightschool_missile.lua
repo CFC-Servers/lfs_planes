@@ -16,6 +16,7 @@ if SERVER then
 
 	local lfsRpgDmgMulCvar = CreateConVar( "lfs_missiledamagemul", 1, FCVAR_ARCHIVE )
 	local lfsRpgMobilityMul = CreateConVar( "lfs_missilemobilitymul", 1, FCVAR_ARCHIVE )
+	local lfsRpgDirectHitPlayerMul = CreateConVar( "lfs_directhitplayersmul", 1, FCVAR_ARCHIVE )
 
 	local maxBlindfireSpeed = 3000
 
@@ -213,7 +214,7 @@ if SERVER then
 			dmgSound = "lfs_impactflesh"
 		elseif HitEnt:IsPlayer() then
 			-- this ends up getting added with the blastdamage, doesn't need to be too strong
-			dmgAmount = 50
+			dmgAmount = 50 * lfsRpgDirectHitPlayerMul:GetFloat()
 			dmgSound = "lfs_impactflesh"
 		end
 
