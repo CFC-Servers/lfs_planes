@@ -16,7 +16,7 @@ if SERVER then
 
 	local lfsRpgDmgMulCvar = CreateConVar( "lfs_missiledamagemul", 1, FCVAR_ARCHIVE )
 	local lfsRpgMobilityMul = CreateConVar( "lfs_missilemobilitymul", 1, FCVAR_ARCHIVE )
-	local lfsRpgDirectHitPlayerMul = CreateConVar( "lfs_directhitplayersmul", 1, FCVAR_ARCHIVE )
+	local lfsRpgDirectHitPlayerMul = CreateConVar( "lfs_missile_directhitplayersmul", 1, FCVAR_ARCHIVE )
 
 	local maxBlindfireSpeed = 3000
 
