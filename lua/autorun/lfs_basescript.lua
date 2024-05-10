@@ -440,13 +440,11 @@ if SERVER then
             if LFS_BIND[button] then
                 ply:lfsSetInput( LFS_BIND[button], true )
 
-                if IsValid( vehicle ) then
-                    if ply.LFS_HIPSTER then
-                        if LFS_BIND[button] == "EXIT" then
-                            timer.Simple( 0, function()
-                                ply:ExitVehicle()
-                            end )
-                        end
+                if IsValid( vehicle ) and ply.LFS_HIPSTER and LFS_BIND[button] == "EXIT" then
+                    if hook.Run( "LFS.OnPlayerRequestLeaveVehicle", vehicle, ply ) ~= false then
+                        timer.Simple( 0, function()
+                            ply:ExitVehicle()
+                        end)
                     end
                 end
             end
