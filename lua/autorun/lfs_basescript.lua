@@ -1032,6 +1032,7 @@ if CLIENT then
         local yPos = Y - (SeatCount + 1) * 30 - 10
 
         for _, Pod in pairs( pSeats ) do
+            if not IsValid( Pod ) then continue end
             local I = Pod:GetNWInt( "pPodIndex", -1 )
             if I >= 0 then
                 if I == MySeat then
