@@ -422,7 +422,11 @@ if SERVER then
     end )
 
     hook.Add( "CanExitVehicle", "!!!lfsCanExitVehicle", function( _, ply )
-        if IsValid( ply:lfsGetPlane() ) then return not ply.LFS_HIPSTER end
+        if not IsValid( ply:lfsGetPlane() ) then return end
+
+        if ply.LFS_HIPSTER then
+            return false
+        end
     end )
 
     hook.Add( "PlayerButtonUp", "!!!lfsButtonUp", function( ply, button )
