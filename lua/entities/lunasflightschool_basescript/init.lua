@@ -1468,10 +1468,12 @@ function ENT:OnTakeDamage( dmginfo )
 		trailEffect:SetMagnitude( ExplodeTime )
 		util.Effect( "lfs_firetrail", trailEffect )
 
-		timer.Simple( ExplodeTime, function()
-			if not IsValid( self ) then return end
-			self:Explode()
-		end )
+		if ExplodeTime ~= 9999 then
+			timer.Simple( ExplodeTime, function()
+				if not IsValid( self ) then return end
+				self:Explode()
+			end )
+		end
 	end
 
 	if NewHealth <= -self:GetMaxHP() then
