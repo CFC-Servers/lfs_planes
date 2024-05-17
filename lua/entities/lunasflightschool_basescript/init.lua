@@ -1440,40 +1440,38 @@ function ENT:OnTakeDamage( dmginfo )
 		end
 	end
 
-	if NewHealth <= 0 and not (self:GetShield() > Damage and ShieldCanBlock) then
-		if not self:IsDestroyed() then
-			self.FinalAttacker = dmginfo:GetAttacker()
-			self.FinalInflictor = dmginfo:GetInflictor()
+	if NewHealth <= 0 and not ( self:GetShield() > Damage and ShieldCanBlock ) and not self:IsDestroyed() then
+		self.FinalAttacker = dmginfo:GetAttacker()
+		self.FinalInflictor = dmginfo:GetInflictor()
 
-			local Attacker = self.FinalAttacker
-			if IsValid( Attacker ) and Attacker:IsPlayer() then
-				net.Start( "lfs_killmarker", true )
-				net.Send( Attacker )
-			end
-
-			self:Destroy()
-
-			self.MaxPerfVelocity = self.MaxPerfVelocity * 10
-			local ExplodeTime = self:IsSpaceShip() and (math.Clamp((self:GetVelocity():Length() - 250) / 500,1.5,8) * math.Rand(0.2,1)) or (self:GetAI() and 30 or 9999)
-			if self:IsGunship() then ExplodeTime = math.Rand(1,2) end
-
-			local effectdata = EffectData()
-				effectdata:SetOrigin( self:GetPos() )
-			util.Effect( "lfs_explosion_nodebris", effectdata )
-
-			local effectdata = EffectData()
-				effectdata:SetOrigin( self:GetPos() )
-				effectdata:SetStart( self:GetPhysicsObject():GetMassCenter() )
-				effectdata:SetEntity( self )
-				effectdata:SetScale( 1 )
-				effectdata:SetMagnitude( ExplodeTime )
-			util.Effect( "lfs_firetrail", effectdata )
-
-			timer.Simple( ExplodeTime, function()
-				if not IsValid( self ) then return end
-				self:Explode()
-			end)
+		local Attacker = self.FinalAttacker
+		if IsValid( Attacker ) and Attacker:IsPlayer() then
+			net.Start( "lfs_killmarker", true )
+			net.Send( Attacker )
 		end
+
+		self:Destroy()
+
+		self.MaxPerfVelocity = self.MaxPerfVelocity * 10
+		local ExplodeTime = self:IsSpaceShip() and ( math.Clamp((self:GetVelocity():Length() - 250 ) / 500, 1.5, 8 ) * math.Rand( 0.2, 1 ) ) or ( self:GetAI() and 30 or 9999 )
+		if self:IsGunship() then ExplodeTime = math.Rand( 1, 2 ) end
+
+		local debrisEffect = EffectData()
+		debrisEffect:SetOrigin( self:GetPos() )
+		util.Effect( "lfs_explosion_nodebris", debrisEffect )
+
+		local trailEffect = EffectData()
+		trailEffect:SetOrigin( self:GetPos() )
+		trailEffect:SetStart( self:GetPhysicsObject():GetMassCenter() )
+		trailEffect:SetEntity( self )
+		trailEffect:SetScale( 1 )
+		trailEffect:SetMagnitude( ExplodeTime )
+		util.Effect( "lfs_firetrail", trailEffect )
+
+		timer.Simple( ExplodeTime, function()
+			if not IsValid( self ) then return end
+			self:Explode()
+		end )
 	end
 
 	if NewHealth <= -self:GetMaxHP() then
@@ -1486,16 +1484,13 @@ function ENT:PrepExplode()
 		self:Explode()
 	end
 
-	if self:IsDestroyed() then
-		if self:GetVelocity():Length() < 800 then
-			self:Explode()
-		end
+	if self:IsDestroyed() and self:GetVelocity():Length() < 800 then
+		self:Explode()
 	end
 end
 
 function ENT:Explode()
 	if self.ExplodedAlready then return end
-
 	self.ExplodedAlready = true
 
 	local Driver = self:GetDriver()
