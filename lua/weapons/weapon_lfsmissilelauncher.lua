@@ -56,13 +56,16 @@ if SERVER then
 		maxRange = tonumber( value )
 	end, "LFS_MissileLauncher_Range" )
 
-	hook.Add( "InitPostEntity", "LFS_MissileLauncher_Range", function()
+	local function setFogRange()
 		local fogController = ents.FindByClass( "env_fog_controller" )[1]
 		if not IsValid( fogController ) then return end
 
 		local fogRange = fogController:GetKeyValues().farz
 		SetGlobalInt( "lfs_rpgmaxrange", math.min( maxRange, fogRange ) )
-	end )
+	end
+
+	hook.Add( "InitPostEntity", "LFS_MissileLauncher_Range", setFogRange )
+	setFogRange() -- Autorefresh
 end
 
 function SWEP:Think()
