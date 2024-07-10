@@ -46,7 +46,7 @@ local lfsRpgLockTime
 local lfsRpgLockAngle
 if SERVER then
 	lfsRpgLockTime = CreateConVar( "lfs_rpglocktime", 3, FCVAR_ARCHIVE )
-	lfsRpgLockAngle = CreateConVar( "lfs_rpglockangle", 15, FCVAR_ARCHIVE )
+	lfsRpgLockAngle = CreateConVar( "lfs_rpglockangle", 7, FCVAR_ARCHIVE )
 
 	local maxRange = CreateConVar( "lfs_rpgmaxrange", 60000, { FCVAR_ARCHIVE } ):GetInt()
 	SetGlobalInt( "lfs_rpgmaxrange", maxRange )
@@ -61,6 +61,7 @@ if SERVER then
 		if not IsValid( fogController ) then return end
 
 		local fogRange = fogController:GetKeyValues().farz
+		if fogRange == -1 then return end
 		SetGlobalInt( "lfs_rpgmaxrange", math.min( maxRange, fogRange ) )
 	end
 
