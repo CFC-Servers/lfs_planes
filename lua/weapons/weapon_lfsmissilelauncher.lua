@@ -230,8 +230,7 @@ end
 
 function SWEP:PrimaryAttack()
 
-	if self:Clip1() <= 0 then
-		if not SERVER then return end
+	if SERVER and self:Clip1() <= 0 then
 		self:Reload()
 	end
 
@@ -264,6 +263,10 @@ function SWEP:PrimaryAttack()
 
 	if IsValid( LockOnTarget ) and self:GetIsLocked() then
 		ent:SetLockOn( LockOnTarget )
+	end
+
+	if SERVER and self:Clip1() <= 0 then
+		self:Reload()
 	end
 end
 
