@@ -265,8 +265,12 @@ function SWEP:PrimaryAttack()
 		ent:SetLockOn( LockOnTarget )
 	end
 
-	if SERVER and self:Clip1() <= 0 then
-		self:Reload()
+	if SERVER then
+		timer.Simple( 0, function()
+			if not IsValid( self ) then return end
+			if self:Clip1() > 0 then return end
+			self:Reload()
+		end )
 	end
 end
 
