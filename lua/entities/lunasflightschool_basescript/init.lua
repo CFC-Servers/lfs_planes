@@ -1517,6 +1517,8 @@ function ENT:Explode()
 		end
 	end
 
+	util.BlastDamage( self, Entity( 0 ), self:GetPos(), 300, 200 )
+
 	local ent = ents.Create( "lunasflightschool_destruction" )
 	if IsValid( ent ) then
 		ent:SetPos( self:LocalToWorld( self:OBBCenter() ) )
