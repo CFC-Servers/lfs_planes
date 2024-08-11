@@ -51,7 +51,7 @@ ENT.MaxShield = 0
 ENT.MaxPrimaryAmmo = -1
 ENT.MaxSecondaryAmmo = -1
 
-ENT.MaintenanceTime = 8
+ENT.MaintenanceTime = 1
 ENT.MaintenanceRepairAmount = 250
 
 function ENT:SetupDataTables()
