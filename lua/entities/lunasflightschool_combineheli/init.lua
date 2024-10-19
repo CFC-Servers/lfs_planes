@@ -50,8 +50,19 @@ function ENT:OnTick()
 		endpos = (startpos + Pod:WorldToLocalAngles( Driver:EyeAngles() ):Forward() * 50000),
 		mins = Vector( -40, -40, -40 ),
 		maxs = Vector( 40, 40, 40 ),
-		filter = self
+		filter = self.TraceFilter
 	} )
+
+	local check = tr.Entity
+	if IsValid( check ) then -- dont aim at ourself
+		local parent = check:GetParent()
+		local validParent = IsValid( parent )
+		local parentedToMe = validParent and parent == self
+		local parentedToMeEventually = validParent and IsValid( parent:GetParent() ) and parent:GetParent() == self -- catch the ACF seat hack too
+		if parentedToMe or parentedToMeEventually then
+			table.insert( self.TraceFilter, check )
+		end
+	end
 
 	local Aimang = (tr.HitPos - Attachment.Pos):Angle()
 	local Angles = self:WorldToLocalAngles( Aimang )
@@ -66,6 +77,7 @@ function ENT:OnTick()
 end
 
 function ENT:RunOnSpawn()
+	self.TraceFilter = { self }
 end
 
 function ENT:PrimaryAttack()
