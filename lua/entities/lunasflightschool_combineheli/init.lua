@@ -44,14 +44,31 @@ function ENT:OnTick()
 
 	if not IsValid( Pod ) or not IsValid( Driver ) then return end
 
+	local traceFilter = self.TraceFilter
+
 	local startpos =  self:GetRotorPos()
 	local tr = util.TraceHull( {
 		start = startpos,
 		endpos = (startpos + Pod:WorldToLocalAngles( Driver:EyeAngles() ):Forward() * 50000),
 		mins = Vector( -40, -40, -40 ),
 		maxs = Vector( 40, 40, 40 ),
-		filter = self
+		filter = traceFilter
 	} )
+
+	local check = tr.Entity
+	if IsValid( check ) then
+		for _ = 1, 2 do
+			local currParent = check:GetParent()
+			if not IsValid( currParent ) then
+				break
+			elseif currParent == self or currParent == Pod then -- catch ACF seat hack
+				table.insert( traceFilter, check )
+				break
+			else
+				check = currParent
+			end
+		end
+	end
 
 	local Aimang = (tr.HitPos - Attachment.Pos):Angle()
 	local Angles = self:WorldToLocalAngles( Aimang )
@@ -66,6 +83,7 @@ function ENT:OnTick()
 end
 
 function ENT:RunOnSpawn()
+	self.TraceFilter = { self, self:GetDriverSeat() }
 end
 
 function ENT:PrimaryAttack()
