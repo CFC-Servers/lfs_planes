@@ -56,15 +56,17 @@ function ENT:OnTick()
 	} )
 
 	local check = tr.Entity
-	for _ = 1, 2 do
-		local currParent = check:GetParent()
-		if not IsValid( currParent ) then
-			break
-		elseif currParent == self or currParent == Pod then -- catch ACF seat hack
-			table.insert( traceFilter, check )
-			break
-		else
-			check = currParent
+	if IsValid( check ) then
+		for _ = 1, 2 do
+			local currParent = check:GetParent()
+			if not IsValid( currParent ) then
+				break
+			elseif currParent == self or currParent == Pod then -- catch ACF seat hack
+				table.insert( traceFilter, check )
+				break
+			else
+				check = currParent
+			end
 		end
 	end
 
