@@ -39,7 +39,7 @@ ENT.RotorPos = Vector(0,0,65)
 ENT.RotorAngle = Angle(15,0,0)
 ENT.RotorRadius = 310
 
-ENT.MaxHealth = 1600
+ENT.MaxHealth = 1200
 
 ENT.MaxPrimaryAmmo = 100
 ENT.MaxSecondaryAmmo = 4
