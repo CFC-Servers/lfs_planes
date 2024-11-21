@@ -103,7 +103,7 @@ sound.Add( {
 	channel = CHAN_WEAPON,
 	volume = 1.0,
 	level = 90,
-	sound = "lfs/spitfire/weapons/wing_lastshot.wav"
+	sound = "lfs/spitfire/weapons/wing_lastshot.mp3"
 } )
 
 sound.Add( {
@@ -111,5 +111,5 @@ sound.Add( {
 	channel = CHAN_STATIC,
 	volume = 1,
 	level = 110,
-	sound = "lfs/spitfire/flyby.wav"
+	sound = "lfs/spitfire/flyby.mp3"
 } )

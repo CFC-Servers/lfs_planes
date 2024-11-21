@@ -257,7 +257,7 @@ sound.Add( {
 	volume = 1.0,
 	level = 125,
 	pitch = {75, 120},
-	sound = {"^lfs/plane_explosion1.wav","^lfs/plane_explosion2.wav","^lfs/plane_explosion3.wav"}
+	sound = {"^lfs/plane_explosion1.mp3","^lfs/plane_explosion2.mp3","^lfs/plane_explosion3.mp3"}
 } )
 
 sound.Add( {

@@ -98,7 +98,7 @@ end
 
 --[[
 function ENT:OnReloadWeapon()
-	self:EmitSound("lfs/weapons_reload.wav")
+	self:EmitSound("lfs/weapons_reload.mp3")
 end
 
 function ENT:OnUnloadWeapon()

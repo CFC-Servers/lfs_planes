@@ -154,15 +154,15 @@ function ENT:HandleWeapons(Fire1, Fire2)
 end
 
 function ENT:OnEngineStarted()
-	self:EmitSound( "lfs/bf109/start.wav" )
+	self:EmitSound( "lfs/bf109/start.mp3" )
 end
 
 function ENT:OnEngineStopped()
-	self:EmitSound( "lfs/bf109/stop.wav" )
+	self:EmitSound( "lfs/bf109/stop.mp3" )
 end
 
 function ENT:OnLandingGearToggled( bOn )
-	self:EmitSound( "lfs/bf109/gear.wav" )
+	self:EmitSound( "lfs/bf109/gear.mp3" )
 end
 
 function ENT:OnRemove()

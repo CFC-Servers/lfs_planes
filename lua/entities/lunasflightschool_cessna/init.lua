@@ -9,9 +9,9 @@ function ENT:RunOnSpawn()
 end
 
 function ENT:OnEngineStarted()
-	self:EmitSound( "lfs/cessna/start.wav" )
+	self:EmitSound( "lfs/cessna/start.mp3" )
 end
 
 function ENT:OnEngineStopped()
-	self:EmitSound( "lfs/cessna/stop.wav" )
+	self:EmitSound( "lfs/cessna/stop.mp3" )
 end
